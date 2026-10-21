@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>繁中服 賣出划算度排行｜FFXIV Market</title>
+<style>
+  :root{
+    --ink:#0b0e1a; --panel:#131829; --panel2:#1a2138; --panel3:#20294a;
+    --line:#2a3352; --line-soft:#222b47;
+    --gold:#d9b45b; --gold-bright:#f0cf7e; --gold-dim:#8c7434;
+    --jade:#5fd3a5; --rose:#e2687a; --sky:#7aa8e8; --plum:#b58ce0;
+    --text:#e8e6df; --muted:#8b93ad; --faint:#5c6584;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  @media (prefers-reduced-motion: reduce){ *{animation:none!important; transition:none!important;} }
+  body{
+    background:var(--ink); color:var(--text);
+    font-family:'Noto Sans TC','PingFang TC','Microsoft JhengHei',system-ui,sans-serif;
+    font-size:14px; line-height:1.55;
+    background-image:
+      radial-gradient(1200px 500px at 80% -10%, rgba(217,180,91,.06), transparent 60%),
+      radial-gradient(900px 420px at 10% 110%, rgba(122,168,232,.05), transparent 60%);
+    min-height:100vh;
+  }
+  .wrap{max-width:1180px; margin:0 auto; padding:28px 18px 80px;}
+
+  /* ---------- header ---------- */
+  header{margin-bottom:22px;}
+  .eyebrow{
+    color:var(--gold); letter-spacing:.35em; font-size:11px; text-transform:uppercase;
+    display:flex; align-items:center; gap:10px; margin-bottom:8px;
+  }
+  .eyebrow::after{content:""; flex:1; height:1px; background:linear-gradient(90deg,var(--gold-dim),transparent);}
+  h1{
+    font-family:'Noto Serif TC','Songti TC','PMingLiU',serif;
+    font-weight:700; font-size:clamp(26px,4.4vw,40px); line-height:1.2; letter-spacing:.02em;
+  }
+  h1 .gil{color:var(--gold-bright);}
+  .sub{color:var(--muted); margin-top:8px; max-width:64ch;}
+  .sub a{color:var(--sky); text-decoration:none; border-bottom:1px dotted var(--sky);}
+
+  /* ---------- panels ---------- */
+  .panel{
+    background:var(--panel); border:1px solid var(--line-soft); border-radius:12px;
+    padding:16px 18px; margin-bottom:14px;
+  }
+  .panel h2{
+    font-size:12px; color:var(--muted); letter-spacing:.2em; font-weight:600;
+    margin-bottom:12px; text-transform:uppercase;
+  }
+  .panel h2 .hint{letter-spacing:0; text-transform:none; color:var(--faint); font-weight:400; margin-left:8px;}
+  .row{display:flex; flex-wrap:wrap; gap:10px; align-items:center;}
+  .row + .row{margin-top:12px;}
+  label.fieldlabel{color:var(--muted); font-size:12px; margin-right:2px; white-space:nowrap;}
+  .fieldlabel{color:var(--muted); font-size:12px; margin-right:2px; white-space:nowrap;}
+  .divider{width:100%; height:1px; background:var(--line-soft); margin:14px 0 2px;}
+
+  /* chips */
+  .chip{
+    background:var(--panel2); border:1px solid var(--line); color:var(--text);
+    border-radius:8px; padding:7px 14px; font-size:13px; cursor:pointer;
+    transition:border-color .15s, background .15s, color .15s; font-family:inherit;
+  }
+  .chip:hover{border-color:var(--gold-dim);}
+  .chip.on{
+    background:linear-gradient(180deg, rgba(217,180,91,.22), rgba(217,180,91,.10));
+    border-color:var(--gold); color:var(--gold-bright);
+  }
+  .chip:disabled{opacity:.45; cursor:not-allowed;}
+  .chipgroup{display:flex; flex-wrap:wrap; gap:8px;}
+
+  select, input[type=number], input[type=text]{
+    background:var(--panel2); border:1px solid var(--line); color:var(--text);
+    border-radius:8px; padding:7px 10px; font-size:13px; font-family:inherit;
+  }
+  select:focus, input:focus, .chip:focus-visible, button:focus-visible{
+    outline:2px solid var(--gold); outline-offset:1px;
+  }
+  input[type=number]{width:96px;}
+  input[type=text]{width:200px;}
+  .check{display:inline-flex; align-items:center; gap:6px; color:var(--muted); font-size:12px; cursor:pointer; white-space:nowrap;}
+  .check input{accent-color:var(--gold); width:15px; height:15px;}
+
+  /* weight sliders */
+  .weights{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px;}
+  .wcard{background:var(--panel2); border:1px solid var(--line-soft); border-radius:10px; padding:10px 14px;}
+  .wcard .wname{display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin-bottom:6px;}
+  .wcard .wval{color:var(--gold-bright); font-variant-numeric:tabular-nums;}
+  input[type=range]{width:100%; accent-color:var(--gold);}
+
+  /* retainer panel */
+  .panel.retainer{border-color:rgba(95,211,165,.28);}
+  .panel.retainer h2{color:var(--jade);}
+  .retainer .chip.on{
+    background:linear-gradient(180deg, rgba(95,211,165,.22), rgba(95,211,165,.08));
+    border-color:var(--jade); color:var(--jade);
+  }
+  .retainer .check input{accent-color:var(--jade);}
+  #retainerBody[hidden]{display:none;}
+
+  /* scan button + progress */
+  .scanbar{display:flex; flex-wrap:wrap; gap:12px; align-items:center;}
+  .btn-primary{
+    font-family:'Noto Serif TC','Songti TC',serif; font-weight:700; letter-spacing:.15em;
+    font-size:15px; color:#1a1405; cursor:pointer; border:none; border-radius:9px;
+    padding:10px 26px;
+    background:linear-gradient(180deg,var(--gold-bright),var(--gold));
+    box-shadow:0 0 18px rgba(217,180,91,.25);
+    transition:filter .15s;
+  }
+  .btn-primary:hover{filter:brightness(1.08);}
+  .btn-primary:disabled{filter:grayscale(.7) brightness(.7); cursor:not-allowed; box-shadow:none;}
+  .btn-ghost{
+    background:transparent; border:1px solid var(--line); color:var(--muted);
+    border-radius:9px; padding:9px 16px; cursor:pointer; font-family:inherit; font-size:13px;
+  }
+  .btn-ghost:hover{border-color:var(--rose); color:var(--rose);}
+  .btn-ghost.calm{border-color:var(--line); color:var(--muted);}
+  .btn-ghost.calm:hover{border-color:var(--sky); color:var(--sky);}
+  .progresswrap{flex:1; min-width:220px;}
+  .progressline{display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin-bottom:4px; font-variant-numeric:tabular-nums;}
+  .bar{height:8px; background:var(--panel2); border:1px solid var(--line-soft); border-radius:99px; overflow:hidden;}
+  .bar .fill{height:100%; width:0%; border-radius:99px;
+    background:linear-gradient(90deg,var(--gold-dim),var(--gold-bright));
+    transition:width .25s ease;}
+  .status{font-size:12px; color:var(--faint); margin-top:8px; min-height:1.2em;}
+  .status.err{color:var(--rose);}
+
+  /* ---------- table ---------- */
+  .tablewrap{overflow-x:auto; border:1px solid var(--line-soft); border-radius:12px; background:var(--panel);}
+  table{border-collapse:collapse; width:100%; min-width:1400px;}
+  thead th{
+    position:sticky; top:0; background:var(--panel3); color:var(--muted);
+    font-size:12px; font-weight:600; letter-spacing:.05em; text-align:right;
+    padding:10px 12px; border-bottom:1px solid var(--line); white-space:nowrap;
+    cursor:pointer; user-select:none;
+  }
+  thead th.name, thead th.rank, thead th.plain{text-align:left; cursor:default;}
+  thead th.sortable:hover{color:var(--gold-bright);}
+  thead th .arrow{color:var(--gold); margin-left:3px;}
+  tbody td{
+    padding:9px 12px; border-bottom:1px solid var(--line-soft);
+    text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap;
+  }
+  tbody tr:hover{background:rgba(217,180,91,.045);}
+  td.rank{text-align:left; font-family:'Noto Serif TC','Songti TC',serif; font-weight:700; width:52px; color:var(--faint);}
+  tr.r1 td.rank{color:var(--gold-bright); font-size:17px; text-shadow:0 0 10px rgba(240,207,126,.5);}
+  tr.r2 td.rank{color:#c8ccda; font-size:16px;}
+  tr.r3 td.rank{color:#c98d5e; font-size:16px;}
+  td.name{text-align:left; max-width:300px;}
+  td.name a{color:var(--text); text-decoration:none;}
+  td.name a:hover{color:var(--gold-bright); text-decoration:underline;}
+  td.src{text-align:left; white-space:normal; max-width:260px;}
+  .cat{display:inline-block; margin-left:8px; font-size:11px; color:var(--faint);
+    border:1px solid var(--line-soft); border-radius:5px; padding:0 6px; vertical-align:1px;}
+  .tag{display:inline-block; font-size:11px; border-radius:5px; padding:1px 6px; margin:1px 4px 1px 0;
+    border:1px solid var(--line); color:var(--muted); line-height:1.5;}
+  .tag.min{border-color:rgba(122,168,232,.5); color:var(--sky);}
+  .tag.btn{border-color:rgba(95,211,165,.5); color:var(--jade);}
+  .tag.fsh{border-color:rgba(181,140,224,.5); color:var(--plum);}
+  .tag.ven{border-color:var(--gold-dim); color:var(--gold);}
+  .tag.warn{border-color:rgba(226,104,122,.5); color:var(--rose);}
+  td.ver{color:var(--muted); font-size:12px;}
+  .v2{color:#7f8aa8;} .v3{color:#8fa9d6;} .v4{color:#d68f8f;}
+  .v5{color:#a99ad6;} .v6{color:#8fd6c4;} .v7{color:var(--gold);}
+  .ratio-hi{color:var(--jade);} .ratio-lo{color:var(--rose);} .ratio-mid{color:var(--muted);}
+  td.cleaned{color:var(--sky); cursor:help;}
+  td.dropcount{color:var(--rose);}
+  .vph{color:var(--jade); font-weight:600;}
+  .vph-net{color:var(--jade); font-weight:700; background:rgba(95,211,165,.10); border-radius:5px;}
+  .clear-fast{color:var(--jade);} .clear-slow{color:var(--rose);}
+  td.score{position:relative; min-width:150px;}
+  .scorebar{
+    position:absolute; left:6px; top:50%; transform:translateY(-50%);
+    height:60%; border-radius:4px; opacity:.22; z-index:0;
+    background:linear-gradient(90deg,var(--gold-dim),var(--gold-bright));
+  }
+  td.score span{position:relative; z-index:1; color:var(--gold-bright); font-weight:600;}
+  .empty{padding:48px 20px; text-align:center; color:var(--faint);}
+  .tfoot{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; padding:12px 4px; color:var(--faint); font-size:12px;}
+  .note{margin-top:18px; color:var(--faint); font-size:12px; line-height:1.7;}
+  .note b{color:var(--muted);}
+  @media (max-width:640px){ .wrap{padding:18px 10px 60px;} .panel{padding:12px;} input[type=text]{width:140px;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Final Fantasy XIV · 繁中服市場</div>
+    <h1>賣出<span class="gil">划算度</span>排行</h1>
+    <p class="sub">以「日均銷量 × 平均成交價 × 目前行情」三項評比，找出現在最值得掛上市場賣出的物品。
+      資料管線與 <a href="https://beherw.github.io/FFXIV_Market/" target="_blank" rel="noopener">貝爾的市場小屋</a> 相同：物品／版本／採集／雇員資料取自該站專案，市場數據取自其後端 Universalis（僅繁中服資料中心）。</p>
+  </header>
+
+  <!-- 伺服器 -->
+  <section class="panel">
+    <h2>查詢範圍（繁中服）</h2>
+    <div class="row"><span class="fieldlabel">資料中心</span><div class="chipgroup" id="dcChips"><button class="chip" disabled>載入中…</button></div></div>
+    <div class="row"><span class="fieldlabel">伺服器</span><div class="chipgroup" id="worldChips"></div></div>
+    <div class="row">
+      <span class="fieldlabel">掃描範圍</span>
+      <select id="scanCat"><option value="">全部分類（完整掃描，約 1–3 分鐘）</option></select>
+      <span class="fieldlabel">品質</span>
+      <div class="chipgroup" id="qualChips">
+        <button class="chip on" data-q="all">綜合</button>
+        <button class="chip" data-q="nq">僅 NQ</button>
+        <button class="chip" data-q="hq">僅 HQ</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 版本與取得方式 -->
+  <section class="panel">
+    <h2>版本與取得方式<span class="hint">挑出「你現在拿得到、而且賣得掉」的東西</span></h2>
+    <div class="row">
+      <span class="fieldlabel">我的進度到</span>
+      <select id="fVerMax">
+        <option value="0">不限版本</option>
+        <option value="2">2.x 新生</option>
+        <option value="3">3.x 蒼穹</option>
+        <option value="4">4.x 紅蓮</option>
+        <option value="5">5.x 暗影</option>
+        <option value="6" selected>6.x 曉月</option>
+        <option value="7">7.x 黃金</option>
+      </select>
+      <label class="check"><input type="checkbox" id="fVerUnknown" checked> 保留查不到版本的物品</label>
+    </div>
+
+    <div class="row">
+      <span class="fieldlabel">取得方式</span>
+      <div class="chipgroup" id="srcChips">
+        <button class="chip on" data-s="any">不限</button>
+        <button class="chip" data-s="MIN">⛏ 採礦師</button>
+        <button class="chip" data-s="BTN">🌿 園藝工</button>
+        <button class="chip" data-s="FSH">🎣 漁夫</button>
+        <button class="chip" data-s="VEN">🧭 雇員探險</button>
+      </div>
+    </div>
+
+    <div class="row">
+      <span class="fieldlabel">採集等級 ≤</span><input type="number" id="fGatherLvl" value="90" min="1" max="100" step="5">
+      <label class="check"><input type="checkbox" id="fNoLimited"> 排除時間限定節點</label>
+      <label class="check"><input type="checkbox" id="fNoFolklore"> 排除需要傳承錄的節點</label>
+    </div>
+
+    <div class="row">
+      <label class="check"><input type="checkbox" id="fNoCrystal" checked> 排除屬性水晶（碎晶／水晶／晶簇共 18 種）</label>
+    </div>
+
+    <div class="divider"></div>
+    <div class="row">
+      <label class="check"><input type="checkbox" id="fPrescan" checked> 掃描前先套用以上條件（範圍變小，掃描快很多）</label>
+    </div>
+  </section>
+
+  <!-- 雇員探險 -->
+  <section class="panel retainer">
+    <h2>雇員探險收益<span class="hint">被動賺錢：算出每個雇員委托的「每小時吉爾」</span></h2>
+    <div class="row">
+      <label class="check"><input type="checkbox" id="vOn"> 開啟雇員收益計算</label>
+    </div>
+    <div id="retainerBody" hidden>
+      <div class="row">
+        <span class="fieldlabel">雇員等級</span>
+        <select id="vLvl"></select>
+        <span class="fieldlabel">採集力</span><input type="number" id="vGather" value="2800" min="0" step="50">
+        <span class="fieldlabel">鑑別力</span><input type="number" id="vPerc" value="2800" min="0" step="50">
+        <span class="fieldlabel">裝備品級</span><input type="number" id="vIlvl" value="560" min="0" step="10">
+      </div>
+      <div class="row">
+        <span class="fieldlabel">委托類型</span>
+        <div class="chipgroup" id="vCatChips">
+          <button class="chip on" data-c="all">全部合併</button>
+          <button class="chip" data-c="17">⛏ 採礦筹集</button>
+          <button class="chip" data-c="18">🌿 採伐筹集</button>
+          <button class="chip" data-c="19">🎣 捕魚筹集</button>
+          <button class="chip" data-c="34">⚔ 狩獵筹集</button>
+        </div>
+      </div>
+      <div class="row">
+        <span class="fieldlabel" id="vCatHint">選單一類型時，表格只留下該類委托並自動改用「雇員時薪」排序。</span>
+      </div>
+      <div class="row">
+        <span class="fieldlabel">單趟時間（分）</span><input type="number" id="vMin" value="60" min="1" step="5">
+        <span class="fieldlabel">市場稅 %</span><input type="number" id="vTax" value="5" min="0" max="20" step="1">
+        <label class="check"><input type="checkbox" id="vOnly"> 只留下這個雇員派得動的委托</label>
+      </div>
+      <div class="row">
+        <span class="fieldlabel">每天總派遣趟數</span><input type="number" id="vRuns" value="12" min="1" step="1">
+        <span class="fieldlabel">你吃得下的市佔 %</span><input type="number" id="vShare" value="50" min="1" max="100" step="5">
+        <span class="fieldlabel">吸收率 ≥ %</span><input type="number" id="vFill" value="0" min="0" max="100" step="10">
+      </div>
+      <p class="note" style="margin-top:12px">
+        採集力、鑑別力、裝備品級請照雇員視窗上的數字填。採集力決定「這個委托能不能派」，鑑別力決定「一趟帶回幾個」。
+      </p>
+    </div>
+  </section>
+
+  <!-- 評分權重 -->
+  <section class="panel">
+    <h2>排行依據與權重</h2>
+    <div class="row" style="margin-bottom:14px">
+      <span class="fieldlabel">排行依據</span>
+      <div class="chipgroup" id="rankChips">
+        <button class="chip on" data-r="sell">賣出划算度</button>
+        <button class="chip" data-r="venture">🧭 最適合雇員去挖</button>
+      </div>
+    </div>
+    <div class="weights" id="wSell">
+      <div class="wcard">
+        <div class="wname"><span>日均銷量（賣得動）</span><span class="wval" id="wvVal">1.0</span></div>
+        <input type="range" id="wv" min="0" max="2" step="0.1" value="1">
+      </div>
+      <div class="wcard">
+        <div class="wname"><span>平均成交價（賣得貴）</span><span class="wval" id="waVal">1.0</span></div>
+        <input type="range" id="wa" min="0" max="2" step="0.1" value="1">
+      </div>
+      <div class="wcard">
+        <div class="wname"><span>行情係數（現在賣好不好）</span><span class="wval" id="wrVal">1.0</span></div>
+        <input type="range" id="wr" min="0" max="2" step="0.1" value="1">
+      </div>
+    </div>
+    <div class="weights" id="wVenture" hidden>
+      <div class="wcard">
+        <div class="wname"><span>日均銷量（市場吃得下）</span><span class="wval" id="wsvVal">1.0</span></div>
+        <input type="range" id="wsv" min="0" max="2" step="0.1" value="1">
+      </div>
+      <div class="wcard">
+        <div class="wname"><span>雇員時薪（挖得值錢）</span><span class="wval" id="wvhVal">1.0</span></div>
+        <input type="range" id="wvh" min="0" max="2" step="0.1" value="1">
+      </div>
+    </div>
+  </section>
+
+  <!-- 掃描 -->
+  <section class="panel">
+    <div class="scanbar">
+      <button class="btn-primary" id="scanBtn">開始掃描</button>
+      <button class="btn-ghost" id="cancelBtn" style="display:none">中止</button>
+      <div class="progresswrap">
+        <div class="progressline"><span id="progText">尚未掃描</span><span id="progPct"></span></div>
+        <div class="bar"><div class="fill" id="progFill"></div></div>
+      </div>
+    </div>
+    <div class="status" id="status"></div>
+  </section>
+
+  <!-- 篩選 -->
+  <section class="panel">
+    <h2>結果篩選</h2>
+    <div class="row">
+      <span class="fieldlabel">搜尋</span><input type="text" id="fSearch" placeholder="物品名稱…">
+      <span class="fieldlabel">分類</span><select id="fCat"><option value="">全部分類</option></select>
+      <span class="fieldlabel">日均銷量 ≥</span><input type="number" id="fVel" value="1" min="0" step="0.5">
+      <span class="fieldlabel">平均成交價 ≥</span><input type="number" id="fPrice" value="0" min="0" step="100">
+    </div>
+    <div class="row">
+      <span class="fieldlabel">價格精算</span>
+      <select id="refineN">
+        <option value="300" selected>前 300 名</option>
+        <option value="500">前 500 名</option>
+        <option value="1000">前 1000 名</option>
+      </select>
+      <button class="btn-ghost calm" id="refineBtn">抓成交明細，重算均價與在售量</button>
+      <label class="check"><input type="checkbox" id="fRobust" checked> 用剔除異常後的均價取代原始均價</label>
+    </div>
+    <div class="row">
+      <button class="btn-ghost calm" id="csvBtn">匯出 CSV</button>
+    </div>
+  </section>
+
+  <!-- 排行 -->
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="rank">名次</th>
+          <th class="name">物品</th>
+          <th class="plain">版本</th>
+          <th class="plain">取得方式</th>
+          <th class="sortable" data-k="velocity">日均銷量</th>
+          <th class="sortable" data-k="avgPrice">平均成交價</th>
+          <th class="sortable" data-k="dropped">剔除</th>
+          <th class="sortable" data-k="minListing">目前最低價</th>
+          <th class="sortable" data-k="ratio">行情係數</th>
+          <th class="sortable" data-k="unitsForSale">在售量</th>
+          <th class="sortable" data-k="daysToClear">消化天數</th>
+          <th class="sortable" data-k="flow">日均金流</th>
+          <th class="sortable" data-k="ventureHour">理論時薪</th>
+          <th class="sortable" data-k="ventureNet">實收時薪</th>
+          <th class="sortable" id="thScore" data-k="score">賣出划算度</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"><tr><td colspan="15" class="empty">選好資料中心後按「開始掃描」，掃完的排行會出現在這裡。</td></tr></tbody>
+    </table>
+  </div>
+  <div class="tfoot">
+    <span id="footInfo"></span>
+    <button class="btn-ghost" id="moreBtn" style="display:none">顯示更多</button>
+  </div>
+
+  <p class="note">
+    <b>評比方式：</b>划算度 = 日均銷量<sup>w₁</sup> × 平均成交價<sup>w₂</sup> × 行情係數<sup>w₃</sup>，並將榜首標準化為 100 分。<br>
+    <b>行情係數</b> = 目前最低掛牌價 ÷ 平均成交價（限制在 0.25–2.0）：<span class="ratio-hi">綠色 &gt; 1.05</span> 代表現在掛牌價高於近期成交均價、賣出更有利；<span class="ratio-lo">紅色 &lt; 0.95</span> 代表正在被砍價、現在賣會低於行情。<br>
+    <b>消化天數</b> = 目前在售量 ÷ 日均銷量，代表市場上現有的貨要幾天才賣得完。<span class="clear-fast">低於 2 天</span>是缺貨、掛上去很快被吃掉；<span class="clear-slow">高於 14 天</span>是塞車，日均銷量再漂亮也得排隊。這欄要按「抓成交明細」才有資料。<br>
+    <b>價格精算</b>：Universalis 的平均成交價是所有成交的直接平均，一筆離譜的高價或洗價就會把它拉歪。按「抓成交明細，重算均價與在售量」會拉回最近 30 天內、最多 50 筆實際成交，先取中位數，再用 MAD（絕對離差中位數）把偏離超過 3 倍標準差等效距離的成交剔除，然後對剩下的取平均。<span style="color:var(--sky)">藍色的均價</span>代表已經清洗過，滑鼠移上去可看原始均價與中位數；「剔除」欄是被判定為異常而丟掉的筆數。成交少於 4 筆的物品樣本不足，不做清洗，沿用原始均價。若有批次沒抓到，狀態列會告訴你缺幾批，再按一次即可補齊。<br>
+    <b>理論時薪</b> = 單趟帶回數量 × 平均成交價 × (1 − 市場稅) ÷ 單趟時數。這是「挖多少賣多少」的上限值，沒有考慮市場吃不吃得下。<br>
+    <b>實收時薪</b>是真正該看的那一欄，把產量壓在市場吞吐量之內：每天產量 = 單趟數量 × 每天總派遣趟數；每天賣得掉 = 日均銷量 × 你吃得下的市佔；兩者取小值才是實際換得到吉爾的量，再除以你投入的總時數。<b>吸收率</b>就是「賣得掉 ÷ 挖得出來」，低於 100% 時會在數字旁邊標紅色百分比，代表這東西單價再漂亮也會積在雇員背包裡。想直接濾掉可以把「吸收率 ≥ %」拉高。<br>
+    <b>雇員適性</b>（排行依據選「最適合雇員去挖」時出現）= 日均銷量<sup>w₁</sup> × 雇員時薪<sup>w₂</sup>，榜首標準化為 100 分。這裡刻意用「理論時薪」而不是「實收時薪」，因為實收時薪本身已經把日均銷量算進去了，再乘一次等於重複計算；用理論時薪相乘，銷量與單位價值才是兩個獨立的維度。切到這個排行時會自動開啟雇員模式，並只保留雇員派得動的物品。<br>    <b>排除屬性水晶</b>：火／冰／風／土／雷／水的碎晶、水晶、晶簇共 18 種，用遊戲內的 UI 分類「水晶」（物品 ID 2–19）精準比對，不是靠名稱關鍵字，所以不會誤殺「髮晶原石」「星點石英原石」這類名字裡有晶的礦物。預設為排除，因為水晶日均銷量動輒上千、幾乎必定佔據雇員排行前幾名，但單價極低、搬運量大。想把它們放回來，取消勾選即可。<br>    <b>日均金流</b> = 日均銷量 × 平均成交價，代表這個物品市場每天流動的吉爾規模。<br>
+    數據為 Universalis 玩家上傳的眾包資料，冷門物品可能較舊；點物品名稱可跳到貝爾市場小屋查看完整價格與取得方式。
+  </p>
+</div>
+
+<script>
+"use strict";
+/* ================= 資料來源（與 beherw.github.io/FFXIV_Market 相同管線） ================= */
+const SITE = "https://beherw.github.io/FFXIV_Market";
+const UNI  = "https://universalis.app/api/v2";
+/* 版本／採集節點／雇員委托三份表沒有被該站單獨託管（打包進 JS），改直接讀該站原始碼倉庫的同一份檔案 */
+const REPO_BASES = [
+  "https://raw.githubusercontent.com/beherw/FFXIV_Market/main",
+  "https://cdn.jsdelivr.net/gh/beherw/FFXIV_Market@main",
+];
+const TCJ = "/teamcraft_git/libs/data/src/lib/json";
+
+/* ---------- 迷你 msgpack 解碼器（讀取該站的 .msgpack 物品資料） ---------- */
+function decodeMsgpack(buf){
+  const u8 = new Uint8Array(buf), dv = new DataView(buf), td = new TextDecoder();
+  let i = 0;
+  function read(){
+    const b = u8[i++];
+    if (b < 0x80) return b;                          // pos fixint
+    if (b >= 0xe0) return b - 256;                   // neg fixint
+    if (b >= 0xa0 && b <= 0xbf) return str(b - 0xa0);// fixstr
+    if (b >= 0x90 && b <= 0x9f) return arr(b - 0x90);// fixarray
+    if (b >= 0x80 && b <= 0x8f) return map(b - 0x80);// fixmap
+    switch(b){
+      case 0xc0: return null;
+      case 0xc2: return false;
+      case 0xc3: return true;
+      case 0xc4: return bin(u8[i++]);
+      case 0xc5: return bin(u16());
+      case 0xc6: return bin(u32());
+      case 0xca: { const v = dv.getFloat32(i); i += 4; return v; }
+      case 0xcb: { const v = dv.getFloat64(i); i += 8; return v; }
+      case 0xcc: return u8[i++];
+      case 0xcd: return u16();
+      case 0xce: return u32();
+      case 0xcf: { const v = dv.getBigUint64(i); i += 8; return Number(v); }
+      case 0xd0: { const v = dv.getInt8(i); i += 1; return v; }
+      case 0xd1: { const v = dv.getInt16(i); i += 2; return v; }
+      case 0xd2: { const v = dv.getInt32(i); i += 4; return v; }
+      case 0xd3: { const v = dv.getBigInt64(i); i += 8; return Number(v); }
+      case 0xd9: return str(u8[i++]);
+      case 0xda: return str(u16());
+      case 0xdb: return str(u32());
+      case 0xdc: return arr(u16());
+      case 0xdd: return arr(u32());
+      case 0xde: return map(u16());
+      case 0xdf: return map(u32());
+      default: throw new Error("msgpack: 不支援的型別 0x" + b.toString(16));
+    }
+  }
+  function u16(){ const v = dv.getUint16(i); i += 2; return v; }
+  function u32(){ const v = dv.getUint32(i); i += 4; return v; }
+  function str(n){ const s = td.decode(u8.subarray(i, i + n)); i += n; return s; }
+  function bin(n){ const s = u8.slice(i, i + n); i += n; return s; }
+  function arr(n){ const a = new Array(n); for (let k = 0; k < n; k++) a[k] = read(); return a; }
+  function map(n){ const o = {}; for (let k = 0; k < n; k++){ const key = read(); o[key] = read(); } return o; }
+  return read();
+}
+
+/* ================= 全域狀態 ================= */
+const S = {
+  dcs: [], worldNames: {}, dc: null,
+  target: null, targetIsDC: true,
+  quality: "all",
+  itemNames: null, itemCat: null, catNames: null, marketable: null,
+  itemVer: null,      // id -> {v:"6.35", major:6}
+  gather: null,       // id -> {MIN,BTN,FSH, lvl, limited, folklore, ephemeral}
+  venture: null,      // id -> [{cat,lvl,reqG,reqI,stat,q:[{n,v}]}]
+  stock: {},          // id -> {units, listings}
+  results: [], scanMeta: "",
+  sortKey: "score", sortDesc: true,
+  rankMode: "sell",           // "sell" = 賣出划算度 / "venture" = 最適合雇員去挖
+  shown: 100, abort: null,
+};
+
+/* 篩選狀態 */
+const F = { srcAny: true, src: {} };
+/* 雇員狀態：cat = "all" 或單一委托類型 */
+const V = { on: false, cat: "all" };
+
+const VEN_CAT = { 17:{n:"採礦筹集", s:"⛏"}, 18:{n:"採伐筹集", s:"🌿"}, 19:{n:"捕魚筹集", s:"🎣"}, 34:{n:"狩獵筹集", s:"⚔"} };
+const JOB_NAME = { MIN:"採礦師", BTN:"園藝工", FSH:"漁夫" };
+const VER_NAME = { 2:"新生", 3:"蒼穹", 4:"紅蓮", 5:"暗影", 6:"曉月", 7:"黃金" };
+const CRYSTAL_CAT = 59;   // UI 分類「水晶」：屬性碎晶／水晶／晶簇
+
+const $ = id => document.getElementById(id);
+const fmt = n => n == null ? "—" : Math.round(n).toLocaleString("zh-TW");
+const fmt1 = n => n == null ? "—" : (Math.round(n * 10) / 10).toLocaleString("zh-TW", { minimumFractionDigits: 1 });
+
+function setStatus(msg, err){ const el = $("status"); el.textContent = msg || ""; el.className = "status" + (err ? " err" : ""); }
+function setProgress(done, total, text){
+  $("progText").textContent = text;
+  $("progPct").textContent = total ? Math.round(done / total * 100) + "%" : "";
+  $("progFill").style.width = total ? (done / total * 100) + "%" : "0%";
+}
+
+/* ================= 初始化：繁中服資料中心 ================= */
+async function init(){
+  const sel = $("vLvl");
+  for (let l = 10; l <= 100; l += 10){
+    const o = document.createElement("option");
+    o.value = l; o.textContent = "Lv " + l; if (l === 90) o.selected = true;
+    sel.appendChild(o);
+  }
+  try{
+    setStatus("載入繁中服伺服器清單…");
+    const [dcRes, wRes] = await Promise.all([
+      fetch(UNI + "/data-centers").then(r => r.json()),
+      fetch(UNI + "/worlds").then(r => r.json()),
+    ]);
+    wRes.forEach(w => S.worldNames[w.id] = w.name);
+    S.dcs = dcRes.filter(dc => dc.region && dc.region.startsWith("繁中服"));
+    if (!S.dcs.length){ setStatus("Universalis 上找不到「繁中服」區域的資料中心。", true); return; }
+    renderDCChips();
+    selectDC(S.dcs[0]);
+    setStatus("");
+  }catch(e){
+    setStatus("伺服器清單載入失敗：" + e.message + "（請確認網路後重新整理）", true);
+  }
+}
+
+function renderDCChips(){
+  const box = $("dcChips"); box.innerHTML = "";
+  S.dcs.forEach(dc => {
+    const b = document.createElement("button");
+    b.className = "chip"; b.textContent = dc.name;
+    b.onclick = () => selectDC(dc);
+    box.appendChild(b);
+  });
+}
+function selectDC(dc){
+  S.dc = dc; S.target = dc.name; S.targetIsDC = true;
+  [...$("dcChips").children].forEach(b => b.classList.toggle("on", b.textContent === dc.name));
+  const wb = $("worldChips"); wb.innerHTML = "";
+  const all = document.createElement("button");
+  all.className = "chip on"; all.textContent = dc.name + "（全服）";
+  all.onclick = () => { S.target = dc.name; S.targetIsDC = true; mark(all); };
+  wb.appendChild(all);
+  dc.worlds.forEach(id => {
+    const name = S.worldNames[id] || ("伺服器" + id);
+    const b = document.createElement("button");
+    b.className = "chip"; b.textContent = name;
+    b.onclick = () => { S.target = name; S.targetIsDC = false; mark(b); };
+    wb.appendChild(b);
+  });
+  function mark(el){ [...wb.children].forEach(b => b.classList.toggle("on", b === el)); }
+}
+
+/* 品質切換 */
+$("qualChips").addEventListener("click", e => {
+  const b = e.target.closest("[data-q]"); if (!b) return;
+  S.quality = b.dataset.q;
+  [...$("qualChips").children].forEach(x => x.classList.toggle("on", x === b));
+  if (S.results.length) rerank();
+});
+
+/* 取得方式切換（多選；「不限」互斥） */
+$("srcChips").addEventListener("click", e => {
+  const b = e.target.closest("[data-s]"); if (!b) return;
+  const s = b.dataset.s;
+  if (s === "any"){ F.srcAny = true; F.src = {}; }
+  else {
+    F.src[s] = !F.src[s];
+    F.srcAny = !Object.keys(F.src).some(k => F.src[k]);
+  }
+  [...$("srcChips").children].forEach(x => {
+    const k = x.dataset.s;
+    x.classList.toggle("on", k === "any" ? F.srcAny : !!F.src[k]);
+  });
+  if (S.results.length) rerank();
+});
+
+/* 雇員委托類型：單選分頁 */
+$("vCatChips").addEventListener("click", e => {
+  const b = e.target.closest("[data-c]"); if (!b) return;
+  V.cat = b.dataset.c;
+  [...$("vCatChips").children].forEach(x => x.classList.toggle("on", x === b));
+  if (V.cat !== "all"){
+    if (!V.on){ V.on = true; $("vOn").checked = true; $("retainerBody").hidden = false; }
+    S.sortKey = "ventureNet"; S.sortDesc = true;
+    $("vCatHint").textContent = `目前只看「${(VEN_CAT[V.cat] || {}).n || "全部"}」，依實收時薪由高到低排序。`;
+  } else {
+    $("vCatHint").textContent = "選單一類型時，表格只留下該類委托並自動改用「實收時薪」排序。";
+  }
+  if (S.results.length) rerank();
+});
+$("vOn").addEventListener("change", () => {
+  V.on = $("vOn").checked;
+  $("retainerBody").hidden = !V.on;
+  if (S.results.length) rerank();
+});
+
+/* 排行依據切換 */
+$("rankChips").addEventListener("click", e => {
+  const b = e.target.closest("[data-r]"); if (!b) return;
+  S.rankMode = b.dataset.r;
+  [...$("rankChips").children].forEach(x => x.classList.toggle("on", x === b));
+  const vm = S.rankMode === "venture";
+  $("wSell").hidden = vm; $("wVenture").hidden = !vm;
+  if (vm && !V.on){ V.on = true; $("vOn").checked = true; $("retainerBody").hidden = false; }
+  S.sortKey = vm ? "ventureScore" : "score"; S.sortDesc = true;
+  if (S.results.length) rerank();
+});
+
+/* 權重滑桿 */
+["wv","wa","wr","wsv","wvh"].forEach(id => {
+  $(id).addEventListener("input", () => {
+    $(id + "Val").textContent = Number($(id).value).toFixed(1);
+    if (S.results.length) rerank();
+  });
+});
+
+/* ================= 物品資料（來自該站託管的 msgpack） ================= */
+async function loadItemData(){
+  if (S.itemNames && S.marketable) return;
+  setStatus("下載物品資料庫（tw-items / 分類 / 可交易清單）…");
+  const [twBuf, catBuf, mkt] = await Promise.all([
+    fetch(SITE + "/data/tw-items.msgpack").then(r => { if(!r.ok) throw new Error("tw-items 下載失敗"); return r.arrayBuffer(); }),
+    fetch(SITE + "/data/ui_categories.msgpack").then(r => { if(!r.ok) throw new Error("分類資料下載失敗"); return r.arrayBuffer(); }),
+    fetch(UNI + "/marketable").then(r => r.json()),
+  ]);
+  const tw = decodeMsgpack(twBuf);
+  S.itemNames = {};
+  for (const k in tw) S.itemNames[k] = tw[k].tw || tw[k].en || ("#" + k);
+  const cat = decodeMsgpack(catBuf);
+  S.itemCat = cat.itemIdToCategory || {};
+  S.catNames = {};
+  const tc = cat.twItemUICategories || {};
+  for (const k in tc) S.catNames[k] = tc[k].tw || ("分類" + k);
+  S.marketable = new Set(mkt);
+  fillCatSelects();
+}
+
+/* ================= 版本 / 採集 / 雇員資料 ================= */
+async function fetchRepoJSON(path){
+  let last;
+  for (const base of REPO_BASES){
+    try{
+      const r = await fetch(base + path);
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return await r.json();
+    }catch(e){ last = e; }
+  }
+  throw new Error(path.split("/").pop() + " 下載失敗：" + (last && last.message));
+}
+
+async function loadMetaData(){
+  if (S.itemVer && S.gather && S.venture) return;
+  setStatus("下載版本 / 採集節點 / 雇員委托資料…");
+  const [itemPatch, patchNames, nodes, tasks] = await Promise.all([
+    fetchRepoJSON(TCJ + "/item-patch.json"),
+    fetchRepoJSON(TCJ + "/patch-names.json"),
+    fetchRepoJSON(TCJ + "/nodes.json"),
+    fetchRepoJSON(TCJ + "/retainer-tasks.json"),
+  ]);
+
+  /* --- 版本 --- */
+  const byPatchId = {};
+  for (const k in patchNames){
+    const p = patchNames[k];
+    if (!p || !p.version) continue;
+    const num = parseFloat(p.version);
+    if (!isFinite(num)) continue;
+    byPatchId[k] = { v: p.version, major: Math.floor(num) };
+  }
+  S.itemVer = {};
+  for (const id in itemPatch){
+    const p = byPatchId[itemPatch[id]];
+    if (p) S.itemVer[id] = p;
+  }
+
+  /* --- 採集節點 --- */
+  S.gather = {};
+  for (const nid in nodes){
+    const n = nodes[nid];
+    const t = Math.abs(n.type | 0);
+    const job = t <= 1 ? "MIN" : t <= 3 ? "BTN" : "FSH";
+    const ids = [].concat(n.items || [], n.hiddenItems || []);
+    const lv = n.level || 0;
+    for (const iid of ids){
+      if (!iid) continue;
+      let g = S.gather[iid];
+      if (!g) g = S.gather[iid] = { MIN:false, BTN:false, FSH:false, lvl:null, limited:true, ephemeral:false, folklore:false };
+      g[job] = true;
+      if (lv && (g.lvl == null || lv < g.lvl)) g.lvl = lv;
+      if (!n.limited) g.limited = false;      // 只要有一個常駐節點就不算限定
+      if (n.ephemeral) g.ephemeral = true;
+      if (n.folklore) g.folklore = true;
+    }
+  }
+
+  /* --- 雇員委托 --- */
+  S.venture = {};
+  for (const t of tasks){
+    const id = t.item; if (!id) continue;
+    const qs = (t.quantities || []).map(q => ({ n:q.quantity, v:q.value || 0 }));
+    if (!qs.length) continue;
+    (S.venture[id] || (S.venture[id] = [])).push({
+      cat: t.category, lvl: t.lvl || 1,
+      reqG: t.reqGathering || 0, reqI: t.reqIlvl || 0,
+      stat: (t.quantities[0] || {}).stat || "perception",
+      q: qs,
+    });
+  }
+}
+
+/* 把所有設定讀成一包，一輪只讀一次 DOM */
+function readCtx(){
+  return {
+    verMax: +$("fVerMax").value || 0,
+    verUnknown: $("fVerUnknown").checked,
+    gatherCap: +$("fGatherLvl").value || 100,
+    noLimited: $("fNoLimited").checked,
+    noFolklore: $("fNoFolklore").checked,
+    noCrystal: $("fNoCrystal").checked,
+    robust: $("fRobust").checked,
+    vOn: V.on,
+    vCat: V.cat,
+    vLvl: +$("vLvl").value,
+    vGather: +$("vGather").value || 0,
+    vPerc: +$("vPerc").value || 0,
+    vIlvl: +$("vIlvl").value || 0,
+    vOnly: $("vOnly").checked,
+    tax: Math.min(0.5, Math.max(0, (+$("vTax").value || 0) / 100)),
+    hours: Math.max(1/60, (+$("vMin").value || 60) / 60),
+    runs: Math.max(1, +$("vRuns").value || 12),
+    share: Math.min(1, Math.max(0.01, (+$("vShare").value || 50) / 100)),
+    minFill: Math.min(1, Math.max(0, (+$("vFill").value || 0) / 100)),
+    rankMode: S.rankMode,
+  };
+}
+
+/* ---- 剔除極端值後的均價：中位數 + MAD (3σ 等效) ---- */
+function median(sorted){
+  const n = sorted.length;
+  if (!n) return null;
+  return n % 2 ? sorted[(n - 1) / 2] : (sorted[n / 2 - 1] + sorted[n / 2]) / 2;
+}
+function robustPrice(prices){
+  if (!prices || prices.length < 4) return null;          // 樣本太少不硬算
+  const s = prices.slice().sort((a,b) => a - b);
+  const med = median(s);
+  const devs = s.map(x => Math.abs(x - med)).sort((a,b) => a - b);
+  const mad = median(devs);
+  // MAD 為 0 表示成交價幾乎都一樣，改用「離中位數 50% 以上」當界線
+  const limit = mad > 0 ? 3 * 1.4826 * mad : Math.max(1, med * 0.5);
+  const keep = s.filter(x => Math.abs(x - med) <= limit);
+  const use = keep.length >= 3 ? keep : s;
+  const avg = use.reduce((a,b) => a + b, 0) / use.length;
+  return { avg, median: med, kept: use.length, dropped: s.length - use.length };
+}
+
+/* 依目前雇員設定，算出這個物品最好的一趟能帶回幾個 */
+function bestVenture(id, c){
+  const arr = S.venture && S.venture[id];
+  if (!arr) return null;
+  let best = null;
+  for (const t of arr){
+    if (c.vCat !== "all" && String(t.cat) !== c.vCat) continue;
+    const usesPerc = t.stat === "perception";
+    const ok = t.lvl <= c.vLvl && (usesPerc ? t.reqG <= c.vGather : t.reqI <= c.vIlvl);
+    if (c.vOnly && !ok) continue;
+    const stat = usesPerc ? c.vPerc : c.vIlvl;
+    let qty = 0;
+    for (const s of t.q) if (stat >= s.v) qty = Math.max(qty, s.n);
+    if (!qty) qty = t.q[0].n;                       // 保底：最低階數量
+    if (!best || qty > best.qty) best = { qty, cat:t.cat, lvl:t.lvl, reqG:t.reqG, reqI:t.reqI, ok, usesPerc };
+  }
+  return best;
+}
+
+function fillCatSelects(){
+  const used = new Set();
+  S.marketable.forEach(id => { if (S.itemNames[id]) { const c = S.itemCat[id]; if (c != null) used.add(c); } });
+  const opts = [...used].filter(c => S.catNames[c]).sort((a,b) => a - b);
+  for (const sel of [$("scanCat"), $("fCat")]) {
+    const keep = sel.firstElementChild.outerHTML;
+    sel.innerHTML = keep;
+    opts.forEach(c => {
+      const o = document.createElement("option");
+      o.value = c; o.textContent = S.catNames[c];
+      sel.appendChild(o);
+    });
+  }
+}
+
+/* ================= 條件判斷（掃描前 / 顯示時共用） ================= */
+function passesMeta(id, c){
+  // 屬性水晶：UI 分類 59「水晶」正好就是 6 碎晶 + 6 水晶 + 6 晶簇（物品 ID 2–19）
+  if (c.noCrystal && (String(S.itemCat[id]) === String(CRYSTAL_CAT) || (id >= 2 && id <= 19))) return false;
+
+  // 版本
+  if (c.verMax){
+    const v = S.itemVer[String(id)];
+    if (!v){ if (!c.verUnknown) return false; }
+    else if (v.major > c.verMax) return false;
+  }
+
+  // 取得方式
+  if (!F.srcAny){
+    const g = S.gather[id];
+    let hit = false;
+    for (const job of ["MIN","BTN","FSH"]){
+      if (!F.src[job] || !g || !g[job]) continue;
+      if (g.lvl != null && g.lvl > c.gatherCap) continue;
+      if (c.noLimited && g.limited) continue;
+      if (c.noFolklore && g.folklore) continue;
+      hit = true; break;
+    }
+    if (!hit && F.src.VEN && S.venture[id]) hit = true;
+    if (!hit) return false;
+  }
+
+  // 雇員模式：勾了「只留派得動的」或選了單一委托類型，就必須真的有委托
+  if (c.vOn && (c.vOnly || c.vCat !== "all") && !bestVenture(id, c)) return false;
+
+  return true;
+}
+
+/* ================= 掃描 ================= */
+$("scanBtn").onclick = startScan;
+$("cancelBtn").onclick = () => { if (S.abort) S.abort.abort(); };
+
+async function startScan(){
+  if (!S.target){ setStatus("請先選擇資料中心。", true); return; }
+  $("scanBtn").disabled = true; $("cancelBtn").style.display = "";
+  S.abort = new AbortController();
+  const signal = S.abort.signal;
+  try{
+    await loadItemData();
+    await loadMetaData();
+    S.stock = {};
+
+    const catFilter = $("scanCat").value;
+    const prescan = $("fPrescan").checked;
+    const ctx = readCtx();
+    let ids = [];
+    S.marketable.forEach(id => {
+      if (!S.itemNames[id]) return;
+      if (catFilter && String(S.itemCat[id]) !== catFilter) return;
+      if (prescan && !passesMeta(id, ctx)) return;
+      ids.push(id);
+    });
+    if (!ids.length){ setStatus("這組條件下沒有可交易物品，放寬版本或取得方式再試一次。", true); return finishScan(); }
+
+    const BATCH = 100, CONC = 5;
+    const batches = [];
+    for (let i = 0; i < ids.length; i += BATCH) batches.push(ids.slice(i, i + BATCH));
+    let done = 0;
+    const out = [];
+    setStatus(`目標：${S.target}｜共 ${ids.length.toLocaleString()} 個可交易物品、${batches.length} 批`);
+    setProgress(0, batches.length, "掃描中…");
+
+    let next = 0;
+    async function worker(){
+      while (next < batches.length){
+        if (signal.aborted) return;
+        const my = batches[next++];
+        const data = await fetchBatch(my, signal);
+        if (data) collect(data, out);
+        done++;
+        setProgress(done, batches.length, `掃描中… 第 ${done}/${batches.length} 批｜已收 ${out.length.toLocaleString()} 筆`);
+      }
+    }
+    await Promise.all(Array.from({length: CONC}, worker));
+    if (signal.aborted){ setStatus("已中止。已掃到的資料仍會顯示。"); }
+    else setStatus("");
+
+    S.results = out;
+    S.scanMeta = `${S.target}｜${new Date().toLocaleString("zh-TW")}｜掃描 ${ids.length.toLocaleString()} 項，其中 ${out.length.toLocaleString()} 項有市場數據`;
+    setProgress(batches.length, batches.length, "掃描完成");
+    rerank();
+  }catch(e){
+    if (e.name !== "AbortError") setStatus("掃描失敗：" + e.message, true);
+  }finally{ finishScan(); }
+}
+function finishScan(){
+  $("scanBtn").disabled = false; $("cancelBtn").style.display = "none"; S.abort = null;
+}
+
+async function fetchBatch(idBatch, signal, attempt = 0){
+  const url = `${UNI}/aggregated/${encodeURIComponent(S.target)}/${idBatch.join(",")}`;
+  try{
+    const r = await fetch(url, { signal });
+    if (r.status === 404) return null;
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return await r.json();
+  }catch(e){
+    if (signal.aborted || attempt >= 3) return null;
+    await new Promise(res => setTimeout(res, 1200 * (attempt + 1)));
+    return fetchBatch(idBatch, signal, attempt + 1);
+  }
+}
+
+/* ---- 欄位萃取：與該站 fetchAggregatedPricesForItemTable 相同 ---- */
+function pick(node, field){
+  if (!node) return undefined;
+  const w = node.world ? node.world[field] : undefined;
+  const d = node.dc ? node.dc[field] : undefined;
+  return S.targetIsDC ? (d !== undefined ? d : w) : w;
+}
+function collect(data, out){
+  if (!data || !data.results) return;
+  for (const item of data.results){
+    const nq = item.nq || {}, hq = item.hq || {};
+    const rec = { id: item.itemId, q: {} };
+    for (const mode of ["all","nq","hq"]){
+      const useNQ = mode !== "hq", useHQ = mode !== "nq";
+      const vN = useNQ ? pick(nq.dailySaleVelocity, "quantity") : undefined;
+      const vH = useHQ ? pick(hq.dailySaleVelocity, "quantity") : undefined;
+      const velocity = (vN !== undefined || vH !== undefined) ? (vN || 0) + (vH || 0) : null;
+
+      const aN = useNQ ? pick(nq.averageSalePrice, "price") : undefined;
+      const aH = useHQ ? pick(hq.averageSalePrice, "price") : undefined;
+      let avg = null;
+      if (aN !== undefined && aH !== undefined){
+        const wn = vN || 0, wh = vH || 0;
+        avg = (wn + wh) > 0 ? (aN * wn + aH * wh) / (wn + wh) : (aN + aH) / 2;
+      } else if (aH !== undefined) avg = aH;
+      else if (aN !== undefined) avg = aN;
+
+      const mN = useNQ ? pick(nq.minListing, "price") : undefined;
+      const mH = useHQ ? pick(hq.minListing, "price") : undefined;
+      let minL = null;
+      if (mN !== undefined && mH !== undefined) minL = Math.min(mN, mH);
+      else if (mH !== undefined) minL = mH;
+      else if (mN !== undefined) minL = mN;
+
+      rec.q[mode] = { velocity, avg, minL };
+    }
+    out.push(rec);
+  }
+}
+
+/* ================= 價格精算（第二輪：成交明細 + 在售量） ================= */
+async function fetchJSONRetry(url, attempts = 3){
+  let last;
+  for (let a = 0; a < attempts; a++){
+    try{
+      const r = await fetch(url);
+      if (r.status === 404) return null;                    // 這批沒資料，不算失敗
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return await r.json();
+    }catch(e){
+      last = e;
+      if (a < attempts - 1) await new Promise(res => setTimeout(res, 900 * (a + 1)));
+    }
+  }
+  throw last;
+}
+/* Universalis 多物品回物件、單一物品直接回本體，統一成陣列 */
+function normItems(data){
+  if (!data) return [];
+  const it = data.items;
+  if (Array.isArray(it)) return it;
+  if (it && typeof it === "object") return Object.keys(it).map(k => it[k]).filter(Boolean);
+  if (data.itemID) return [data];
+  return [];
+}
+
+$("refineBtn").onclick = async () => {
+  if (!S.results.length){ setStatus("先掃描一次再精算價格。", true); return; }
+  const N = +$("refineN").value || 300;
+  const rk = S.rankMode === "venture" ? "ventureScore" : "score";
+  const rows = computeRows().sort((a,b) => (b[rk] || 0) - (a[rk] || 0)).slice(0, N);
+  if (!rows.length){ setStatus("目前的條件下沒有物品可以精算。", true); return; }
+
+  const btn = $("refineBtn"); btn.disabled = true;
+  const ids = rows.map(r => r.id);
+  const t = encodeURIComponent(S.target);
+
+  // 拆成兩種輕量請求：在售量一批 100 筆，成交明細一批 50 筆（回傳量大很多）
+  const jobs = [];
+  for (let i = 0; i < ids.length; i += 100)
+    jobs.push({ kind:"stock", url:`${UNI}/${t}/${ids.slice(i, i + 100).join(",")}?listings=0&entries=0` });
+  for (let i = 0; i < ids.length; i += 50)
+    jobs.push({ kind:"hist",  url:`${UNI}/history/${t}/${ids.slice(i, i + 50).join(",")}?entriesToReturn=50&entriesWithin=2592000` });
+
+  let done = 0, failed = 0, lastErr = null;
+  setProgress(0, jobs.length, "價格精算中…");
+  try{
+    for (const job of jobs){
+      try{
+        const data = await fetchJSONRetry(job.url);
+        for (const it of normItems(data)){
+          const id = it.itemID; if (!id) continue;
+          const rec = S.stock[id] || (S.stock[id] = { units:null, listings:null, hist:null });
+          if (job.kind === "stock"){
+            if (it.unitsForSale != null) rec.units = it.unitsForSale;
+            if (it.listingsCount != null) rec.listings = it.listingsCount;
+          } else {
+            rec.hist = (it.entries || [])
+              .filter(e => e && e.pricePerUnit > 0)
+              .map(e => ({ p: e.pricePerUnit, hq: !!e.hq }));
+          }
+        }
+      }catch(e){ failed++; lastErr = e; }      // 單批失敗不影響其他批
+      done++;
+      setProgress(done, jobs.length, `價格精算中… ${done}/${jobs.length} 批` + (failed ? `（${failed} 批沒抓到）` : ""));
+      await new Promise(res => setTimeout(res, 120));       // 對 Universalis 客氣一點
+    }
+
+    render();
+    if (failed >= jobs.length){
+      setStatus("價格精算沒有拿到任何資料：" + ((lastErr && lastErr.message) || "連線失敗") +
+                "。稍後再試，或把精算範圍改成前 300 名。", true);
+    } else if (failed){
+      setStatus(`已重算前 ${N.toLocaleString()} 名，其中 ${failed}/${jobs.length} 批沒抓到（伺服器忙碌），` +
+                `這些物品沿用原始均價。可以再按一次補齊。`);
+    } else {
+      setStatus(`已用最近成交明細重算前 ${N.toLocaleString()} 名的均價與在售量。`);
+    }
+  }catch(e){
+    setStatus("價格精算中斷：" + e.message, true);
+  }finally{ btn.disabled = false; }
+};
+
+/* ================= 評分與排序 ================= */
+function computeRows(ctx){
+  const c = ctx || readCtx();
+  const wv = +$("wv").value, wa = +$("wa").value, wr = +$("wr").value;
+  const rows = [];
+  for (const r of S.results){
+    const m = r.q[S.quality];
+    if (!m) continue;
+    const V0 = m.velocity, P = m.minL;
+    let A = m.avg;
+    if (V0 == null || V0 <= 0 || A == null || A <= 0) continue;
+    if (!passesMeta(r.id, c)) continue;
+
+    const st = S.stock[r.id];
+    const rawAvg = A;
+    let rp = null;
+    if (st && st.hist && st.hist.length){
+      const px = st.hist
+        .filter(e => S.quality === "all" ? true : S.quality === "hq" ? e.hq : !e.hq)
+        .map(e => e.p);
+      rp = robustPrice(px);
+      if (rp && c.robust && rp.avg > 0) A = rp.avg;
+    }
+
+    const ratio = P != null ? Math.min(2, Math.max(0.25, P / A)) : 1;
+    const score = Math.pow(V0, wv) * Math.pow(A, wa) * Math.pow(ratio, wr);
+
+    const ven = c.vOn ? bestVenture(r.id, c) : null;
+    const units = st && st.units != null ? st.units : null;
+    const gil = ven ? ven.qty * A * (1 - c.tax) : null;
+
+    // 市場吞吐量上限：每天挖得出來 vs 每天賣得掉
+    let fill = null, dailyGil = null, netHour = null;
+    if (ven){
+      const dailyOut = ven.qty * c.runs;                 // 每天產量
+      const absorb   = V0 * c.share;                     // 每天市場吃得下你的量
+      const sold     = Math.min(dailyOut, absorb);
+      fill      = dailyOut > 0 ? sold / dailyOut : 0;
+      dailyGil  = sold * A * (1 - c.tax);
+      netHour   = dailyGil / (c.runs * c.hours);         // 實收時薪
+    }
+    if (ven && c.minFill > 0 && fill < c.minFill) continue;
+    if (c.rankMode === "venture" && !ven) continue;
+
+    const ventureScore = ven && netHour != null
+      ? Math.pow(V0, +$("wsv").value) * Math.pow(Math.max(1, gil / c.hours), +$("wvh").value)
+      : null;
+
+    rows.push({
+      id: r.id, name: S.itemNames[r.id] || ("#" + r.id),
+      cat: S.itemCat[r.id], catName: S.catNames[S.itemCat[r.id]] || "",
+      velocity: V0, avgPrice: A, rawAvg, minListing: P,
+      cleaned: !!(rp && c.robust),
+      dropped: rp ? rp.dropped : null,
+      medianPrice: rp ? rp.median : null,
+      ratio, flow: V0 * A, score,
+      ver: S.itemVer ? S.itemVer[String(r.id)] : null,
+      gather: S.gather ? S.gather[r.id] : null,
+      ven,
+      unitsForSale: units,
+      daysToClear: units != null ? units / V0 : null,
+      ventureGil: gil,
+      ventureHour: gil != null ? gil / c.hours : null,
+      ventureFill: fill,
+      ventureDaily: dailyGil,
+      ventureNet: netHour,
+      ventureScore,
+    });
+  }
+  return rows;
+}
+
+function rerank(){ S.shown = 100; render(); }
+
+function srcCell(r){
+  const out = [];
+  const g = r.gather;
+  if (g){
+    for (const job of ["MIN","BTN","FSH"]){
+      if (!g[job]) continue;
+      const cls = job.toLowerCase();
+      out.push(`<span class="tag ${cls}">${JOB_NAME[job]}${g.lvl ? " Lv" + g.lvl : ""}</span>`);
+    }
+    if (g.limited) out.push(`<span class="tag warn">時限</span>`);
+    if (g.folklore) out.push(`<span class="tag warn">傳承錄</span>`);
+    else if (g.ephemeral) out.push(`<span class="tag warn">以太</span>`);
+  }
+  if (r.ven){
+    const c = VEN_CAT[r.ven.cat] || { n:"雇員", s:"🧭" };
+    out.push(`<span class="tag ven">${c.s}${c.n} Lv${r.ven.lvl}×${r.ven.qty}${r.ven.ok ? "" : "・不足"}</span>`);
+  } else if (!V.on && S.venture && S.venture[r.id]){
+    out.push(`<span class="tag ven">🧭 雇員可採</span>`);
+  }
+  return out.join("") || `<span class="tag">—</span>`;
+}
+
+function render(){
+  const q = $("fSearch").value.trim().toLowerCase();
+  const cat = $("fCat").value;
+  const minV = +$("fVel").value || 0;
+  const minP = +$("fPrice").value || 0;
+
+  let rows = computeRows().filter(r =>
+    r.velocity >= minV && r.avgPrice >= minP &&
+    (!cat || String(r.cat) === cat) &&
+    (!q || r.name.toLowerCase().includes(q))
+  );
+  const k = S.sortKey;
+  rows.sort((a,b) => (((b[k] ?? -Infinity) - (a[k] ?? -Infinity))) * (S.sortDesc ? 1 : -1));
+  const vm = S.rankMode === "venture";
+  const sk = vm ? "ventureScore" : "score";
+  const maxScore = rows.reduce((mx, r) => Math.max(mx, r[sk] || 0), 0) || 1;
+  $("thScore").dataset.k = sk;
+  $("thScore").textContent = vm ? "雇員適性" : "賣出划算度";
+
+  const tb = $("tbody"); tb.innerHTML = "";
+  if (!rows.length){
+    tb.innerHTML = `<tr><td colspan="15" class="empty">${S.results.length ? "沒有符合條件的物品，放寬版本、取得方式或銷量門檻試試。" : "選好資料中心後按「開始掃描」，掃完的排行會出現在這裡。"}</td></tr>`;
+    $("footInfo").textContent = S.scanMeta; $("moreBtn").style.display = "none";
+    return;
+  }
+  const frag = document.createDocumentFragment();
+  rows.slice(0, S.shown).forEach((r, idx) => {
+    const tr = document.createElement("tr");
+    if (idx < 3 && S.sortKey === sk && S.sortDesc) tr.className = "r" + (idx + 1);
+    const rcls = r.ratio > 1.05 ? "ratio-hi" : r.ratio < 0.95 ? "ratio-lo" : "ratio-mid";
+    const sc = (r[sk] || 0) / maxScore * 100;
+    const vcls = r.ver ? "v" + r.ver.major : "";
+    const dcls = r.daysToClear == null ? "" : r.daysToClear < 2 ? "clear-fast" : r.daysToClear > 14 ? "clear-slow" : "";
+    tr.innerHTML =
+      `<td class="rank">${idx + 1}</td>` +
+      `<td class="name"><a href="${SITE}/item/${r.id}" target="_blank" rel="noopener">${escapeHtml(r.name)}</a>` +
+        (r.catName ? `<span class="cat">${escapeHtml(r.catName)}</span>` : "") + `</td>` +
+      `<td class="ver ${vcls}">${r.ver ? escapeHtml(r.ver.v) : "—"}</td>` +
+      `<td class="src">${srcCell(r)}</td>` +
+      `<td>${fmt1(r.velocity)}</td>` +
+      `<td class="${r.cleaned ? "cleaned" : ""}"${r.cleaned ? ` title="原始均價 ${fmt(r.rawAvg)}／中位數 ${fmt(r.medianPrice)}"` : ""}>${fmt(r.avgPrice)}</td>` +
+      `<td class="${r.dropped ? "dropcount" : ""}">${r.dropped == null ? "—" : r.dropped}</td>` +
+      `<td>${fmt(r.minListing)}</td>` +
+      `<td class="${rcls}">${r.ratio.toFixed(2)}</td>` +
+      `<td>${fmt(r.unitsForSale)}</td>` +
+      `<td class="${dcls}">${r.daysToClear == null ? "—" : fmt1(r.daysToClear)}</td>` +
+      `<td>${fmt(r.flow)}</td>` +
+      `<td class="${r.ventureHour ? "vph" : ""}">${fmt(r.ventureHour)}</td>` +
+      `<td class="${r.ventureNet ? "vph-net" : ""}"${r.ventureNet != null ? ` title="每天實收 ${fmt(r.ventureDaily)} 吉爾｜市場吸收率 ${Math.round(r.ventureFill * 100)}%"` : ""}>` +
+        `${fmt(r.ventureNet)}${r.ventureFill != null && r.ventureFill < 0.999 ? ` <span class="tag warn">${Math.round(r.ventureFill * 100)}%</span>` : ""}</td>` +
+      `<td class="score"><div class="scorebar" style="width:${Math.max(3, sc)}%"></div><span>${sc.toFixed(1)}</span></td>`;
+    frag.appendChild(tr);
+  });
+  tb.appendChild(frag);
+  $("footInfo").textContent = `${S.scanMeta}｜符合條件 ${rows.length.toLocaleString()} 項，顯示前 ${Math.min(S.shown, rows.length)} 名`;
+  $("moreBtn").style.display = rows.length > S.shown ? "" : "none";
+
+  document.querySelectorAll("thead th.sortable").forEach(th => {
+    const base = th.textContent.replace(/[▲▼]\s*$/, "").trim();
+    th.innerHTML = base + (th.dataset.k === S.sortKey ? `<span class="arrow">${S.sortDesc ? "▼" : "▲"}</span>` : "");
+  });
+}
+function escapeHtml(s){ return s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+document.querySelector("thead").addEventListener("click", e => {
+  const th = e.target.closest("th.sortable"); if (!th) return;
+  const k = th.dataset.k;
+  if (S.sortKey === k) S.sortDesc = !S.sortDesc; else { S.sortKey = k; S.sortDesc = true; }
+  render();
+});
+["fSearch","fCat","fVel","fPrice","fVerMax","fVerUnknown","fGatherLvl","fNoLimited","fNoFolklore","fNoCrystal","fRobust",
+ "vLvl","vGather","vPerc","vIlvl","vMin","vTax","vOnly","vRuns","vShare","vFill"].forEach(id =>
+  $(id).addEventListener("input", () => { if (S.results.length){ S.shown = 100; render(); } })
+);
+$("moreBtn").onclick = () => { S.shown += 100; render(); };
+
+/* CSV 匯出 */
+$("csvBtn").onclick = () => {
+  const rows = computeRows().sort((a,b) => (b[S.rankMode === "venture" ? "ventureScore" : "score"] || 0) - (a[S.rankMode === "venture" ? "ventureScore" : "score"] || 0));
+  if (!rows.length) return;
+  const vm = S.rankMode === "venture";
+  const sk = vm ? "ventureScore" : "score";
+  const maxScore = rows[0][sk] || 1;
+  let csv = "\uFEFF名次,物品ID,物品,分類,版本,採集職業,採集等級,雇員委托,單趟數量,日均銷量,平均成交價,原始均價,剔除筆數,目前最低價,行情係數,在售量,消化天數,日均金流,理論時薪,實收時薪,吸收率%,每日實收,排行分數\n";
+  rows.forEach((r,i) => {
+    const g = r.gather;
+    const jobs = g ? ["MIN","BTN","FSH"].filter(j => g[j]).map(j => JOB_NAME[j]).join("/") : "";
+    const vc = r.ven ? (VEN_CAT[r.ven.cat] || {}).n || "" : "";
+    csv += [i+1, r.id, `"${r.name.replace(/"/g,'""')}"`, `"${r.catName}"`,
+      r.ver ? r.ver.v : "", `"${jobs}"`, g && g.lvl != null ? g.lvl : "",
+      `"${vc}"`, r.ven ? r.ven.qty : "",
+      r.velocity.toFixed(2), Math.round(r.avgPrice), Math.round(r.rawAvg), r.dropped ?? "",
+      r.minListing ?? "",
+      r.ratio.toFixed(2), r.unitsForSale ?? "", r.daysToClear != null ? r.daysToClear.toFixed(1) : "",
+      Math.round(r.flow),
+      r.ventureHour != null ? Math.round(r.ventureHour) : "",
+      r.ventureNet != null ? Math.round(r.ventureNet) : "",
+      r.ventureFill != null ? Math.round(r.ventureFill * 100) : "",
+      r.ventureDaily != null ? Math.round(r.ventureDaily) : "",
+      ((r[sk] || 0)/maxScore*100).toFixed(1)].join(",") + "\n";
+  });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], {type:"text/csv"}));
+  a.download = `繁中服賣出划算度_${S.target}.csv`;
+  a.click();
+};
+
+init();
+</script>
+</body>
+</html>
