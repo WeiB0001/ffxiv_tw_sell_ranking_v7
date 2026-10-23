@@ -46,6 +46,19 @@
     background:var(--panel); border:1px solid var(--line-soft); border-radius:12px;
     padding:16px 18px; margin-bottom:14px;
   }
+  .panel > h2{
+    cursor:pointer; user-select:none; display:flex; align-items:center; gap:8px;
+  }
+  .panel > h2::before{
+    content:"▾"; color:var(--gold); font-size:11px; transition:transform .15s; flex:none;
+  }
+  .panel.collapsed > h2::before{ transform:rotate(-90deg); }
+  .panel.collapsed > h2{ margin-bottom:0; }
+  .panel.collapsed .pbody{ display:none; }
+  .panel > h2 .hint{ margin-left:auto; text-align:right; }
+  .panel > h2 .count{
+    letter-spacing:0; text-transform:none; color:var(--gold-dim); font-weight:400; font-size:11px;
+  }
   .panel h2{
     font-size:12px; color:var(--muted); letter-spacing:.2em; font-weight:600;
     margin-bottom:12px; text-transform:uppercase;
@@ -170,6 +183,11 @@
   td.dropcount{color:var(--rose);}
   .vph{color:var(--jade); font-weight:600;}
   .vph-net{color:var(--jade); font-weight:700; background:rgba(95,211,165,.10); border-radius:5px;}
+  .tag.crf{border-color:rgba(217,180,91,.5); color:var(--gold);}
+  /* 依排行模式切換欄位群，避免表格過寬 */
+  table:not(.show-ven) .cg-ven{display:none;}
+  table:not(.show-craft) .cg-craft{display:none;}
+  table:not(.show-net) .cg-net{display:none;}
   .clear-fast{color:var(--jade);} .clear-slow{color:var(--rose);}
   td.score{position:relative; min-width:150px;}
   .scorebar{
@@ -197,6 +215,7 @@
   <!-- 伺服器 -->
   <section class="panel">
     <h2>查詢範圍（繁中服）</h2>
+    <div class="pbody">
     <div class="row"><span class="fieldlabel">資料中心</span><div class="chipgroup" id="dcChips"><button class="chip" disabled>載入中…</button></div></div>
     <div class="row"><span class="fieldlabel">伺服器</span><div class="chipgroup" id="worldChips"></div></div>
     <div class="row">
@@ -208,12 +227,13 @@
         <button class="chip" data-q="nq">僅 NQ</button>
         <button class="chip" data-q="hq">僅 HQ</button>
       </div>
-    </div>
+    </div></div>
   </section>
 
   <!-- 版本與取得方式 -->
   <section class="panel">
     <h2>版本與取得方式<span class="hint">挑出「你現在拿得到、而且賣得掉」的東西</span></h2>
+    <div class="pbody">
     <div class="row">
       <span class="fieldlabel">我的進度到</span>
       <select id="fVerMax">
@@ -236,6 +256,7 @@
         <button class="chip" data-s="BTN">🌿 園藝工</button>
         <button class="chip" data-s="FSH">🎣 漁夫</button>
         <button class="chip" data-s="VEN">🧭 雇員探險</button>
+        <button class="chip" data-s="CRAFT">🔨 生產</button>
       </div>
     </div>
 
@@ -252,12 +273,14 @@
     <div class="divider"></div>
     <div class="row">
       <label class="check"><input type="checkbox" id="fPrescan" checked> 掃描前先套用以上條件（範圍變小，掃描快很多）</label>
-    </div>
+      <label class="check"><input type="checkbox" id="fDropLow" checked> 掃描時直接丟棄日均銷量低於門檻的物品（門檻見下方「日均銷量 ≥」）</label>
+    </div></div>
   </section>
 
   <!-- 雇員探險 -->
   <section class="panel retainer">
     <h2>雇員探險收益<span class="hint">被動賺錢：算出每個雇員委托的「每小時吉爾」</span></h2>
+    <div class="pbody">
     <div class="row">
       <label class="check"><input type="checkbox" id="vOn"> 開啟雇員收益計算</label>
     </div>
@@ -295,17 +318,19 @@
       <p class="note" style="margin-top:12px">
         採集力、鑑別力、裝備品級請照雇員視窗上的數字填。採集力決定「這個委托能不能派」，鑑別力決定「一趟帶回幾個」。
       </p>
-    </div>
+    </div></div>
   </section>
 
   <!-- 評分權重 -->
   <section class="panel">
     <h2>排行依據與權重</h2>
+    <div class="pbody">
     <div class="row" style="margin-bottom:14px">
       <span class="fieldlabel">排行依據</span>
       <div class="chipgroup" id="rankChips">
         <button class="chip on" data-r="sell">賣出划算度</button>
         <button class="chip" data-r="venture">🧭 最適合雇員去挖</button>
+        <button class="chip" data-r="craft">🔨 製作利潤</button>
       </div>
     </div>
     <div class="weights" id="wSell">
@@ -314,7 +339,7 @@
         <input type="range" id="wv" min="0" max="2" step="0.1" value="1">
       </div>
       <div class="wcard">
-        <div class="wname"><span>平均成交價（賣得貴）</span><span class="wval" id="waVal">1.0</span></div>
+        <div class="wname"><span id="waName">平均成交價（賣得貴）</span><span class="wval" id="waVal">1.0</span></div>
         <input type="range" id="wa" min="0" max="2" step="0.1" value="1">
       </div>
       <div class="wcard">
@@ -331,6 +356,67 @@
         <div class="wname"><span>雇員時薪（挖得值錢）</span><span class="wval" id="wvhVal">1.0</span></div>
         <input type="range" id="wvh" min="0" max="2" step="0.1" value="1">
       </div>
+    </div></div>
+  </section>
+
+
+  <!-- 生產分析（與採集完全分開，不影響採集排名） -->
+  <section class="panel craftpanel collapsed">
+    <h2>生產分析<span class="count" id="craftCount"></span><span class="hint">只在「🔨 製作利潤」排行生效</span></h2>
+    <div class="pbody">
+      <div class="row">
+        <span class="fieldlabel">排行依據</span>
+        <div class="chipgroup" id="cRankChips">
+          <button class="chip on" data-cr="craftProfit">每批利潤</button>
+          <button class="chip" data-cr="craftROI">資本報酬率 ROI</button>
+          <button class="chip" data-cr="craftDaily">每日利潤</button>
+          <button class="chip" data-cr="craftCapital">所需本金（低→高）</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <span class="fieldlabel">材料成本基準</span>
+        <div class="chipgroup" id="cBasisChips">
+          <button class="chip on" data-b="own">自採材料（素材均價＝機會成本）</button>
+          <button class="chip" data-b="buy">買材料（市場最低掛牌價）</button>
+          <button class="chip" data-b="npc">NPC 固定價（買不到的材料才看市場）</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <span class="fieldlabel">製作等級 ≤</span><input type="number" id="cLvl" value="90" min="1" max="100" step="5">
+        <span class="fieldlabel">只看職業</span>
+        <select id="cJob">
+          <option value="">全部製作職業</option>
+          <option value="8">木工師</option><option value="9">鍛鐵師</option>
+          <option value="10">鑄甲師</option><option value="11">雕金師</option>
+          <option value="12">製革師</option><option value="13">裁衣師</option>
+          <option value="14">煉金術士</option><option value="15">烹調師</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <label class="check"><input type="checkbox" id="cFixedOnly"> 只看固定成本配方（材料全部能用 NPC 固定價買到）</label>
+        <label class="check"><input type="checkbox" id="cHideMissing" checked> 隱藏材料缺報價的配方</label>
+      </div>
+
+      <div class="row">
+        <span class="fieldlabel">本金上限</span><input type="number" id="cMaxCap" value="0" min="0" step="10000">
+        <span class="fieldlabel">ROI ≥ %</span><input type="number" id="cMinROI" value="0" min="0" step="10">
+        <button class="btn-ghost calm" id="craftBtn">抓材料報價，算製作利潤</button>
+      </div>
+
+      <div class="row">
+        <label class="check"><input type="checkbox" id="fNetScore"> 另外：把材料成本也算進「賣出划算度」（會把製作品混進採集榜，預設關閉）</label>
+        <button class="btn-ghost calm" id="netMatBtn" style="display:none">抓材料報價</button>
+      </div>
+
+      <p class="note" style="margin-top:10px">
+        <b>自採材料</b>問的是：雇員挖回來的素材，直接賣掉好還是加工再賣好？成本用素材自己的成交均價，也就是你放棄的賣價。
+        <b>買材料</b>問的是：從市場買齊材料來做有沒有賺頭。
+        <b>NPC 固定價</b>是三者裡成本最確定的——價格寫死在商店裡，不受市場波動影響；買不到的材料才回頭用市場均價，並標示出來。
+        本金上限填 0 表示不限。
+      </p>
     </div>
   </section>
 
@@ -339,6 +425,7 @@
     <div class="scanbar">
       <button class="btn-primary" id="scanBtn">開始掃描</button>
       <button class="btn-ghost" id="cancelBtn" style="display:none">中止</button>
+      <span class="fieldlabel">並行請求</span><input type="number" id="scanConc" value="6" min="3" max="10" step="1" style="width:70px">
       <div class="progresswrap">
         <div class="progressline"><span id="progText">尚未掃描</span><span id="progPct"></span></div>
         <div class="bar"><div class="fill" id="progFill"></div></div>
@@ -350,6 +437,7 @@
   <!-- 篩選 -->
   <section class="panel">
     <h2>結果篩選</h2>
+    <div class="pbody">
     <div class="row">
       <span class="fieldlabel">搜尋</span><input type="text" id="fSearch" placeholder="物品名稱…">
       <span class="fieldlabel">分類</span><select id="fCat"><option value="">全部分類</option></select>
@@ -368,7 +456,7 @@
     </div>
     <div class="row">
       <button class="btn-ghost calm" id="csvBtn">匯出 CSV</button>
-    </div>
+    </div></div>
   </section>
 
   <!-- 排行 -->
@@ -388,12 +476,21 @@
           <th class="sortable" data-k="unitsForSale">在售量</th>
           <th class="sortable" data-k="daysToClear">消化天數</th>
           <th class="sortable" data-k="flow">日均金流</th>
-          <th class="sortable" data-k="ventureHour">理論時薪</th>
-          <th class="sortable" data-k="ventureNet">實收時薪</th>
+          <th class="sortable cg-net" data-k="netUnit">淨單價</th>
+          <th class="sortable cg-ven" data-k="ventureHour">理論時薪</th>
+          <th class="sortable cg-ven" data-k="ventureNet">實收時薪</th>
+          <th class="sortable cg-ven" data-k="deadSlots">庫存壓力</th>
+          <th class="plain cg-craft">製作</th>
+          <th class="sortable cg-craft" data-k="craftCostGil">材料成本</th>
+          <th class="sortable cg-craft" data-k="craftProfit">製作利潤</th>
+          <th class="sortable cg-craft" data-k="craftMult">加工倍率</th>
+          <th class="sortable cg-craft" data-k="craftROI">ROI</th>
+          <th class="sortable cg-craft" data-k="craftDaily">每日利潤</th>
+          <th class="sortable cg-craft" data-k="craftCapital">所需本金</th>
           <th class="sortable" id="thScore" data-k="score">賣出划算度</th>
         </tr>
       </thead>
-      <tbody id="tbody"><tr><td colspan="15" class="empty">選好資料中心後按「開始掃描」，掃完的排行會出現在這裡。</td></tr></tbody>
+      <tbody id="tbody"><tr><td colspan="24" class="empty">選好資料中心後按「開始掃描」，掃完的排行會出現在這裡。</td></tr></tbody>
     </table>
   </div>
   <div class="tfoot">
@@ -408,7 +505,7 @@
     <b>價格精算</b>：Universalis 的平均成交價是所有成交的直接平均，一筆離譜的高價或洗價就會把它拉歪。按「抓成交明細，重算均價與在售量」會拉回最近 30 天內、最多 50 筆實際成交，先取中位數，再用 MAD（絕對離差中位數）把偏離超過 3 倍標準差等效距離的成交剔除，然後對剩下的取平均。<span style="color:var(--sky)">藍色的均價</span>代表已經清洗過，滑鼠移上去可看原始均價與中位數；「剔除」欄是被判定為異常而丟掉的筆數。成交少於 4 筆的物品樣本不足，不做清洗，沿用原始均價。若有批次沒抓到，狀態列會告訴你缺幾批，再按一次即可補齊。<br>
     <b>理論時薪</b> = 單趟帶回數量 × 平均成交價 × (1 − 市場稅) ÷ 單趟時數。這是「挖多少賣多少」的上限值，沒有考慮市場吃不吃得下。<br>
     <b>實收時薪</b>是真正該看的那一欄，把產量壓在市場吞吐量之內：每天產量 = 單趟數量 × 每天總派遣趟數；每天賣得掉 = 日均銷量 × 你吃得下的市佔；兩者取小值才是實際換得到吉爾的量，再除以你投入的總時數。<b>吸收率</b>就是「賣得掉 ÷ 挖得出來」，低於 100% 時會在數字旁邊標紅色百分比，代表這東西單價再漂亮也會積在雇員背包裡。想直接濾掉可以把「吸收率 ≥ %」拉高。<br>
-    <b>雇員適性</b>（排行依據選「最適合雇員去挖」時出現）= 日均銷量<sup>w₁</sup> × 雇員時薪<sup>w₂</sup>，榜首標準化為 100 分。這裡刻意用「理論時薪」而不是「實收時薪」，因為實收時薪本身已經把日均銷量算進去了，再乘一次等於重複計算；用理論時薪相乘，銷量與單位價值才是兩個獨立的維度。切到這個排行時會自動開啟雇員模式，並只保留雇員派得動的物品。<br>    <b>排除屬性水晶</b>：火／冰／風／土／雷／水的碎晶、水晶、晶簇共 18 種，用遊戲內的 UI 分類「水晶」（物品 ID 2–19）精準比對，不是靠名稱關鍵字，所以不會誤殺「髮晶原石」「星點石英原石」這類名字裡有晶的礦物。預設為排除，因為水晶日均銷量動輒上千、幾乎必定佔據雇員排行前幾名，但單價極低、搬運量大。想把它們放回來，取消勾選即可。<br>    <b>日均金流</b> = 日均銷量 × 平均成交價，代表這個物品市場每天流動的吉爾規模。<br>
+    <b>雇員適性</b>（排行依據選「最適合雇員去挖」時出現）= 日均銷量<sup>w₁</sup> × 雇員時薪<sup>w₂</sup>，榜首標準化為 100 分。這裡刻意用「理論時薪」而不是「實收時薪」，因為實收時薪本身已經把日均銷量算進去了，再乘一次等於重複計算；用理論時薪相乘，銷量與單位價值才是兩個獨立的維度。切到這個排行時會自動開啟雇員模式，並只保留雇員派得動的物品。<br>    <b>取得方式「🔨 生產」</b>把八個製作職業合併成一個條件，只問「這東西做不做得出來」，不分木工／鍛鐵／雕金。想單看某個職業，到製作利潤面板的「只看職業」挑。選這個條件時會自動下載製作配方資料（約 5.6 MB，一個 session 一次），並受上方「製作等級 ≤」限制。幾個條件同時勾選是聯集：採礦師＋生產 = 挖得到的 <b>或</b> 做得出來的。<br>    <b>排除屬性水晶</b>：火／冰／風／土／雷／水的碎晶、水晶、晶簇共 18 種，用遊戲內的 UI 分類「水晶」（物品 ID 2–19）精準比對，不是靠名稱關鍵字，所以不會誤殺「髮晶原石」「星點石英原石」這類名字裡有晶的礦物。預設為排除，因為水晶日均銷量動輒上千、幾乎必定佔據雇員排行前幾名，但單價極低、搬運量大。想把它們放回來，取消勾選即可。<br>    <b>庫存壓力</b> = 每天挖出來但賣不掉的量 × 7 ÷ 堆疊上限，也就是你每週會累積幾格賣不出去的死庫存。0 格代表產量完全被市場吸收；超過 5 格就要考慮減少派遣或換物品。筹集委托的素材堆疊上限都是 999（水晶是 9999），單趟最多 120 個，所以一趟貨永遠只佔 1 格——真正會吃背包的是這種賣不掉的累積量。<br>    <b>掃描時丟棄冷門物品</b>：日均銷量是 API 回傳的欄位，要先打完請求才知道，所以這個門檻<b>不會</b>減少掃描的請求數或時間。它省的是後面：結果集變小，調權重、換排序、切品質都更順，而且「價格精算」和「抓材料報價」這兩個第二輪請求不會再浪費在你根本看不到的冷門列上（這是真正省請求的地方）。判斷用「綜合」品質的銷量，它等於 NQ＋HQ、必定大於任一單獨品質，所以丟掉的列在任何品質模式下都不可能入榜，切換品質不會缺資料。<br>    <b>並行請求</b>預設 6。Universalis 沒有公布硬性速率上限，單次請求的 100 個 ID 已經是上限，所以要再快只能提高並行數。看到批次失敗變多就往下調。<br>    <b>生產分析面板</b>裡的設定只在「🔨 製作利潤」排行生效，不會動到採集或雇員的排名；生產專屬欄位也只在該排行出現。面板標題可以點擊收合，收合狀態記在瀏覽器裡，下次打開照你上次的樣子。<br>    <b>三個資本效率指標彼此不能互換</b>：<b>ROI</b> = 利潤÷本金，本金有限時就看這個；<b>每日利潤</b>是絕對規模，但已經受市場吸收量限制（做得出來不等於賣得掉）；<b>所需本金</b>是要維持那個每日速度、身上得壓多少錢，這一欄排序是越低越好。本金少追 ROI，本金多追每日利潤——同一批配方用這三個排，前五名通常完全不同。<br>    <b>固定成本配方</b>指材料全部能用 NPC 商店固定價買到的配方（共 1,622 個，水晶算在內）。這類配方的材料成本<b>寫死在商店裡、不受市場波動影響</b>，也不需要採集或雇員，可以無限重複。成本基準選「NPC 固定價」時，買不到的材料才回頭用市場均價，並在取得方式欄標示有幾種材料不是固定價。<br>    <b>划算度扣掉製作材料成本</b>：勾選後，划算度公式裡的價值項從「平均成交價」換成「每單位淨值」——可製作的物品是 成品均價×(1−稅) − 材料成本÷成品數，純採集的物品沒有材料成本，就是 成品均價×(1−稅)。材料成本一律用材料自己的<b>成交均價</b>計算。兩種物品的單位相同（每賣掉一個實際進帳多少吉爾），所以採集品和製作品可以放在同一個榜上直接比。淨值是負的（做出來反而虧錢）會得到 0 分排到最後，不會因為成品單價高就誤佔前排。需要先按「抓材料報價」；缺報價的配方標成「材料缺價」，預設排除而不是當成 0 元成本。<br>    <b>製作利潤</b> = 成品均價 × 成品數 × (1 − 市場稅) − Σ(材料單價 × 需求量)；<b>加工倍率</b>是收入 ÷ 成本，大於 1 才有加工價值。材料一律以 NQ 計價。只要有任何一種材料抓不到報價，整筆會標成「材料缺價」並預設排除，不會把缺價材料當成 0 元而算出假利潤。注意這裡沒有把製作失敗、HQ 溢價和初品質納入計算。<br>    <b>日均金流</b> = 日均銷量 × 平均成交價，代表這個物品市場每天流動的吉爾規模。<br>
     數據為 Universalis 玩家上傳的眾包資料，冷門物品可能較舊；點物品名稱可跳到貝爾市場小屋查看完整價格與取得方式。
   </p>
 </div>
@@ -479,6 +576,10 @@ const S = {
   quality: "all",
   itemNames: null, itemCat: null, catNames: null, marketable: null,
   itemVer: null,      // id -> {v:"6.35", major:6}
+  stacks: null,       // id -> 堆疊上限
+  recipes: null,      // result id -> {job,lvl,yields,ing:[{id,amount}]}
+  matPrice: {},       // 材料 id -> {avg, min}
+  vendor: null,       // 材料 id -> NPC 固定單價
   gather: null,       // id -> {MIN,BTN,FSH, lvl, limited, folklore, ephemeral}
   venture: null,      // id -> [{cat,lvl,reqG,reqI,stat,q:[{n,v}]}]
   stock: {},          // id -> {units, listings}
@@ -492,6 +593,8 @@ const S = {
 const F = { srcAny: true, src: {} };
 /* 雇員狀態：cat = "all" 或單一委托類型 */
 const V = { on: false, cat: "all" };
+/* 製作狀態 */
+const C = { basis: "own", rank: "craftProfit" };
 
 const VEN_CAT = { 17:{n:"採礦筹集", s:"⛏"}, 18:{n:"採伐筹集", s:"🌿"}, 19:{n:"捕魚筹集", s:"🎣"}, 34:{n:"狩獵筹集", s:"⚔"} };
 const JOB_NAME = { MIN:"採礦師", BTN:"園藝工", FSH:"漁夫" };
@@ -570,7 +673,7 @@ $("qualChips").addEventListener("click", e => {
 });
 
 /* 取得方式切換（多選；「不限」互斥） */
-$("srcChips").addEventListener("click", e => {
+$("srcChips").addEventListener("click", async e => {
   const b = e.target.closest("[data-s]"); if (!b) return;
   const s = b.dataset.s;
   if (s === "any"){ F.srcAny = true; F.src = {}; }
@@ -583,6 +686,13 @@ $("srcChips").addEventListener("click", e => {
     x.classList.toggle("on", k === "any" ? F.srcAny : !!F.src[k]);
   });
   if (S.results.length) rerank();
+  // 「生產」要有配方表才篩得動，第一次點就順手載入
+  if (F.src.CRAFT && !S.recipes){
+    b.disabled = true;
+    try{ await loadRecipes(); if (S.results.length) rerank(); }
+    catch(err){ setStatus(err.message, true); }
+    finally{ b.disabled = false; }
+  }
 });
 
 /* 雇員委托類型：單選分頁 */
@@ -610,11 +720,123 @@ $("rankChips").addEventListener("click", e => {
   const b = e.target.closest("[data-r]"); if (!b) return;
   S.rankMode = b.dataset.r;
   [...$("rankChips").children].forEach(x => x.classList.toggle("on", x === b));
-  const vm = S.rankMode === "venture";
-  $("wSell").hidden = vm; $("wVenture").hidden = !vm;
+  const vm = S.rankMode === "venture", cm = S.rankMode === "craft";
+  $("wSell").hidden = vm || cm; $("wVenture").hidden = !vm;
   if (vm && !V.on){ V.on = true; $("vOn").checked = true; $("retainerBody").hidden = false; }
-  S.sortKey = vm ? "ventureScore" : "score"; S.sortDesc = true;
+  S.sortKey = vm ? "ventureScore" : cm ? C.rank : "score";
+  S.sortDesc = !(cm && C.rank === "craftCapital");      // 本金是越低越好
+  if (cm) document.querySelector(".craftpanel").classList.remove("collapsed");
+  if (cm && !S.recipes) setStatus("按「抓材料報價，算製作利潤」開始；第一次會下載製作配方資料。");
   if (S.results.length) rerank();
+});
+
+/* 材料成本基準切換 */
+$("cBasisChips").addEventListener("click", async e => {
+  const b = e.target.closest("[data-b]"); if (!b) return;
+  C.basis = b.dataset.b;
+  [...$("cBasisChips").children].forEach(x => x.classList.toggle("on", x === b));
+  if (C.basis === "npc" && !S.vendor){
+    b.disabled = true;
+    try{ await loadVendor(); }catch(err){ setStatus(err.message, true); }
+    finally{ b.disabled = false; }
+  }
+  if (S.results.length) render();
+});
+
+/* 生產模式的排行依據 */
+$("cRankChips").addEventListener("click", e => {
+  const b = e.target.closest("[data-cr]"); if (!b) return;
+  C.rank = b.dataset.cr;
+  [...$("cRankChips").children].forEach(x => x.classList.toggle("on", x === b));
+  if (S.rankMode === "craft"){ S.sortKey = C.rank; S.sortDesc = C.rank !== "craftCapital"; }
+  if (S.results.length) rerank();
+});
+
+/* 只看固定成本配方：需要商店資料 */
+$("cFixedOnly").addEventListener("change", async () => {
+  if ($("cFixedOnly").checked && !S.vendor){
+    try{ await loadVendor(); }catch(err){ setStatus(err.message, true); }
+  }
+  if (S.results.length) rerank();
+});
+
+/* ---- 抓材料報價（製作利潤模式與「划算度扣材料成本」共用） ---- */
+async function fetchMatPrices(){
+  if (!S.results.length){ setStatus("先掃描一次再抓材料報價。", true); return false; }
+  await loadRecipes();
+
+  // 現在結果裡有配方、而且在製作等級內的成品
+  const c = readCtx();
+  const outs = [];
+  for (const r of S.results){
+    const rec = S.recipes[r.id];
+    if (!rec || rec.lvl > c.cLvl) continue;
+    if (c.cJob && String(rec.job) !== c.cJob) continue;
+    outs.push(r.id);
+  }
+  if (!outs.length){ setStatus("目前結果裡沒有符合條件的可製作物品。放寬製作等級或擴大掃描範圍。", true); return false; }
+
+  // 這些配方要用到的所有材料
+  const mats = new Set();
+  for (const id of outs) for (const x of S.recipes[id].ing) mats.add(x.id);
+  const need = [...mats].filter(id => !S.matPrice[id]);
+  if (!need.length){ render(); setStatus(`材料報價已是最新（${mats.size.toLocaleString()} 種材料）。`); return true; }
+  setStatus(`${outs.length.toLocaleString()} 項可製作物品，用到 ${mats.size.toLocaleString()} 種材料，其中 ${need.length.toLocaleString()} 種還沒有報價。`);
+
+  const batches = [];
+  for (let i = 0; i < need.length; i += 100) batches.push(need.slice(i, i + 100));
+  let failed = 0;
+  for (let i = 0; i < batches.length; i++){
+    setProgress(i, batches.length, `抓材料報價… 第 ${i + 1}/${batches.length} 批`);
+    try{
+      const url = `${UNI}/aggregated/${encodeURIComponent(S.target)}/${batches[i].join(",")}`;
+      const data = await fetchJSONRetry(url);
+      for (const item of (data && data.results) || []){
+        const nq = item.nq || {}, hq = item.hq || {};
+        const aN = pick(nq.averageSalePrice, "price"), aH = pick(hq.averageSalePrice, "price");
+        const mN = pick(nq.minListing, "price"),       mH = pick(hq.minListing, "price");
+        // 材料一律用 NQ 計價：做東西用 NQ 材料就夠，HQ 材料是另一筆帳
+        S.matPrice[item.itemId] = {
+          avg: aN != null ? aN : (aH != null ? aH : null),
+          min: mN != null ? mN : (mH != null ? mH : null),
+        };
+      }
+    }catch(e){ failed++; }
+    await new Promise(res => setTimeout(res, 120));
+  }
+  setProgress(batches.length, batches.length, "材料報價完成");
+  render();
+  setStatus(failed
+    ? `材料報價完成，但有 ${failed}/${batches.length} 批沒抓到，相關配方會標成「材料缺價」。可以再按一次補齊。`
+    : `已取得 ${mats.size.toLocaleString()} 種材料的報價，${outs.length.toLocaleString()} 項可製作物品已重新計算。`);
+  return true;
+}
+
+for (const bid of ["craftBtn", "netMatBtn"]){
+  $(bid).onclick = async () => {
+    const btn = $(bid); btn.disabled = true;
+    try{ await fetchMatPrices(); }
+    catch(e){ setStatus(e.message, true); }
+    finally{ btn.disabled = false; syncNetUI(); }
+  };
+}
+
+/* 划算度扣材料成本的開關 */
+function syncNetUI(){
+  const on = $("fNetScore").checked;
+  $("waName").textContent = on ? "每單位淨值（扣材料成本）" : "平均成交價（賣得貴）";
+  // 還沒抓過材料報價時，把補抓的入口放在開關旁邊
+  $("netMatBtn").style.display = on && !Object.keys(S.matPrice).length ? "" : "none";
+}
+$("fNetScore").addEventListener("change", async () => {
+  syncNetUI();
+  if (S.results.length) rerank();
+  if ($("fNetScore").checked && !Object.keys(S.matPrice).length)
+    setStatus("已切換成淨值排序。還沒有材料報價，可製作物品會先標成「材料缺價」——按旁邊的「抓材料報價」補上。");
+  if ($("fNetScore").checked && !S.recipes){
+    try{ await loadRecipes(); syncNetUI(); if (S.results.length) rerank(); }
+    catch(e){ setStatus(e.message, true); }
+  }
 });
 
 /* 權重滑桿 */
@@ -660,14 +882,18 @@ async function fetchRepoJSON(path){
 }
 
 async function loadMetaData(){
-  if (S.itemVer && S.gather && S.venture) return;
-  setStatus("下載版本 / 採集節點 / 雇員委托資料…");
-  const [itemPatch, patchNames, nodes, tasks] = await Promise.all([
+  if (S.itemVer && S.gather && S.venture && S.stacks) return;
+  setStatus("下載版本 / 採集節點 / 雇員委托 / 堆疊上限資料…");
+  const [itemPatch, patchNames, nodes, tasks, stacks] = await Promise.all([
     fetchRepoJSON(TCJ + "/item-patch.json"),
     fetchRepoJSON(TCJ + "/patch-names.json"),
     fetchRepoJSON(TCJ + "/nodes.json"),
     fetchRepoJSON(TCJ + "/retainer-tasks.json"),
+    fetchRepoJSON(TCJ + "/stack-sizes.json"),
   ]);
+
+  /* --- 堆疊上限（決定一趟貨吃掉幾格背包） --- */
+  S.stacks = stacks || {};
 
   /* --- 版本 --- */
   const byPatchId = {};
@@ -742,6 +968,16 @@ function readCtx(){
     share: Math.min(1, Math.max(0.01, (+$("vShare").value || 50) / 100)),
     minFill: Math.min(1, Math.max(0, (+$("vFill").value || 0) / 100)),
     rankMode: S.rankMode,
+    basis: C.basis,
+    cLvl: +$("cLvl").value || 100,
+    cJob: $("cJob").value,
+    hideMissing: $("cHideMissing").checked,
+    netScore: $("fNetScore").checked,
+    minVel: +$("fVel").value || 0,
+    minPrice: +$("fPrice").value || 0,
+    fixedOnly: $("cFixedOnly").checked,
+    maxCap: +$("cMaxCap").value || 0,
+    minROI: (+$("cMinROI").value || 0) / 100,
   };
 }
 
@@ -799,6 +1035,109 @@ function fillCatSelects(){
   }
 }
 
+/* ================= 製作配方（延遲載入：只有開啟製作模式才下載） ================= */
+const CRAFT_JOB = { 8:"木工", 9:"鍛鐵", 10:"鑄甲", 11:"雕金", 12:"製革", 13:"裁衣", 14:"煉金", 15:"烹調" };
+
+async function loadRecipes(){
+  if (S.recipes) return;
+  setStatus("下載製作配方資料（約 5.6 MB，只需載一次）…");
+  let buf = null, last = null;
+  for (const url of [SITE + "/data/recipes.msgpack",
+                     REPO_BASES[0] + "/public/data/recipes.msgpack"]){
+    try{
+      const r = await fetch(url);
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      buf = await r.arrayBuffer(); break;
+    }catch(e){ last = e; }
+  }
+  if (!buf) throw new Error("製作配方下載失敗：" + ((last && last.message) || "未知錯誤"));
+
+  const data = decodeMsgpack(buf);
+  const list = (data && data.recipes) || [];
+  S.recipes = {};
+  for (const rec of list){
+    const out = rec.result; if (!out) continue;
+    if (!CRAFT_JOB[rec.job]) continue;                  // 排除島嶼(-10)與設備製作(0)
+    const ing = (rec.ingredients || []).filter(x => x && x.id > 0)
+                  .map(x => ({ id:x.id, amount:x.amount || 1 }));
+    if (!ing.length) continue;
+    const cand = { job:rec.job, lvl:rec.lvl || 1, yields:rec.yields || 1, ing };
+    const cur = S.recipes[out];
+    // 同一成品有多個配方時，取製作等級最低的（最容易做到的那個）
+    if (!cur || cand.lvl < cur.lvl) S.recipes[out] = cand;
+  }
+  setStatus("");
+}
+
+/* ---- NPC 商店固定價（GilShop）：延遲載入 ---- */
+async function loadVendor(){
+  if (S.vendor) return;
+  setStatus("下載 NPC 商店價格資料（約 8 MB，只需載一次）…");
+  let buf = null, last = null;
+  for (const url of [SITE + "/data/shops.msgpack",
+                     REPO_BASES[0] + "/public/data/shops.msgpack"]){
+    try{
+      const r = await fetch(url);
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      buf = await r.arrayBuffer(); break;
+    }catch(e){ last = e; }
+  }
+  if (!buf) throw new Error("NPC 商店資料下載失敗：" + ((last && last.message) || "未知錯誤"));
+
+  const data = decodeMsgpack(buf);
+  const shops = (data && data.shops) || {};
+  S.vendor = {};
+  for (const sid in shops){
+    const s = shops[sid];
+    if (!s || s.type !== "GilShop") continue;            // 只要吉爾商店，兌換類不算固定價
+    for (const t of s.trades || []){
+      const cur = t.currencies || [];
+      if (cur.length !== 1 || cur[0].id !== 1) continue;  // 貨幣 id 1 = 吉爾
+      const price = cur[0].amount;
+      if (!(price > 0)) continue;
+      for (const it of t.items || []){
+        const id = it.id, amt = it.amount || 1;
+        if (!id) continue;
+        const unit = price / amt;
+        if (S.vendor[id] == null || unit < S.vendor[id]) S.vendor[id] = unit;
+      }
+    }
+  }
+  setStatus("");
+}
+
+/* 以目前材料報價算一筆配方的成本；缺價的材料會回報出來而不是當成 0。
+   npc 基準：優先用商店固定價，買不到的材料才退回市場均價（並記下來）。 */
+function craftCost(rec, basis){
+  let cost = 0; const missing = [];
+  let fixed = true, fallback = 0;
+  for (const x of rec.ing){
+    let unit = null;
+    if (basis === "npc"){
+      const v = S.vendor ? S.vendor[x.id] : null;
+      if (v != null && v > 0) unit = v;
+      else {
+        fixed = false;
+        const p = S.matPrice[x.id];
+        unit = p && p.avg > 0 ? p.avg : null;
+        if (unit != null) fallback++;
+      }
+    } else {
+      const p = S.matPrice[x.id];
+      unit = p ? (basis === "buy" ? (p.min != null ? p.min : p.avg) : p.avg) : null;
+    }
+    if (unit == null || !(unit > 0)){ missing.push(x.id); continue; }
+    cost += unit * x.amount;
+  }
+  return { cost, missing, fixed, fallback };
+}
+
+/* 材料是否全部能用 NPC 固定價買到（水晶算在內：商店常駐、價格極低） */
+function isFixedCost(rec){
+  if (!S.vendor) return false;
+  return rec.ing.every(x => (x.id >= 2 && x.id <= 19) || (S.vendor[x.id] != null && S.vendor[x.id] > 0));
+}
+
 /* ================= 條件判斷（掃描前 / 顯示時共用） ================= */
 function passesMeta(id, c){
   // 屬性水晶：UI 分類 59「水晶」正好就是 6 碎晶 + 6 水晶 + 6 晶簇（物品 ID 2–19）
@@ -823,6 +1162,11 @@ function passesMeta(id, c){
       hit = true; break;
     }
     if (!hit && F.src.VEN && S.venture[id]) hit = true;
+    if (!hit && F.src.CRAFT && S.recipes){
+      const rec = S.recipes[id];
+      // 八個製作職業合併看，不分開；只有在製作面板明確挑了職業時才進一步限制
+      if (rec && rec.lvl <= c.cLvl && (!c.cJob || String(rec.job) === c.cJob)) hit = true;
+    }
     if (!hit) return false;
   }
 
@@ -844,6 +1188,7 @@ async function startScan(){
   try{
     await loadItemData();
     await loadMetaData();
+    if (F.src.CRAFT || S.rankMode === "craft") await loadRecipes();
     S.stock = {};
 
     const catFilter = $("scanCat").value;
@@ -858,12 +1203,14 @@ async function startScan(){
     });
     if (!ids.length){ setStatus("這組條件下沒有可交易物品，放寬版本或取得方式再試一次。", true); return finishScan(); }
 
-    const BATCH = 100, CONC = 5;
+    const BATCH = 100;                                  // Universalis 單次請求上限就是 100 個 ID
+    const CONC = Math.min(10, Math.max(3, +$("scanConc").value || 6));
+    const drop = $("fDropLow").checked ? (+$("fVel").value || 0) : 0;
     const batches = [];
     for (let i = 0; i < ids.length; i += BATCH) batches.push(ids.slice(i, i + BATCH));
     let done = 0;
     const out = [];
-    setStatus(`目標：${S.target}｜共 ${ids.length.toLocaleString()} 個可交易物品、${batches.length} 批`);
+    setStatus(`目標：${S.target}｜共 ${ids.length.toLocaleString()} 個可交易物品、${batches.length} 批｜並行 ${CONC}`);
     setProgress(0, batches.length, "掃描中…");
 
     let next = 0;
@@ -872,17 +1219,22 @@ async function startScan(){
         if (signal.aborted) return;
         const my = batches[next++];
         const data = await fetchBatch(my, signal);
-        if (data) collect(data, out);
+        if (data) collect(data, out, drop);
         done++;
-        setProgress(done, batches.length, `掃描中… 第 ${done}/${batches.length} 批｜已收 ${out.length.toLocaleString()} 筆`);
+        setProgress(done, batches.length,
+          `掃描中… 第 ${done}/${batches.length} 批｜已收 ${out.length.toLocaleString()} 筆` +
+          (out.dropped ? `（丟棄 ${out.dropped.toLocaleString()} 筆冷門）` : ""));
       }
     }
     await Promise.all(Array.from({length: CONC}, worker));
     if (signal.aborted){ setStatus("已中止。已掃到的資料仍會顯示。"); }
     else setStatus("");
 
+    const dropped = out.dropped || 0;
     S.results = out;
-    S.scanMeta = `${S.target}｜${new Date().toLocaleString("zh-TW")}｜掃描 ${ids.length.toLocaleString()} 項，其中 ${out.length.toLocaleString()} 項有市場數據`;
+    S.scanMeta = `${S.target}｜${new Date().toLocaleString("zh-TW")}｜掃描 ${ids.length.toLocaleString()} 項，` +
+      `收 ${out.length.toLocaleString()} 項` +
+      (dropped ? `（另有 ${dropped.toLocaleString()} 項日均銷量 < ${drop} 已丟棄）` : "");
     setProgress(batches.length, batches.length, "掃描完成");
     rerank();
   }catch(e){
@@ -914,7 +1266,7 @@ function pick(node, field){
   const d = node.dc ? node.dc[field] : undefined;
   return S.targetIsDC ? (d !== undefined ? d : w) : w;
 }
-function collect(data, out){
+function collect(data, out, drop){
   if (!data || !data.results) return;
   for (const item of data.results){
     const nq = item.nq || {}, hq = item.hq || {};
@@ -942,6 +1294,12 @@ function collect(data, out){
       else if (mN !== undefined) minL = mN;
 
       rec.q[mode] = { velocity, avg, minL };
+    }
+    /* 「綜合」的銷量 = NQ + HQ，必定 ≥ 任一單獨品質，所以只要它低於門檻，
+       三種品質模式都不可能過關 —— 直接不收，後續切換品質也不會因此缺資料。 */
+    if (drop > 0){
+      const vAll = rec.q.all.velocity;
+      if (vAll == null || vAll < drop){ out.dropped = (out.dropped || 0) + 1; continue; }
     }
     out.push(rec);
   }
@@ -1041,6 +1399,7 @@ function computeRows(ctx){
     const V0 = m.velocity, P = m.minL;
     let A = m.avg;
     if (V0 == null || V0 <= 0 || A == null || A <= 0) continue;
+    if (V0 < c.minVel || A < c.minPrice) continue;      // 門檻在這裡就擋掉，第二輪抓價才不會浪費在看不到的列上
     if (!passesMeta(r.id, c)) continue;
 
     const st = S.stock[r.id];
@@ -1055,7 +1414,6 @@ function computeRows(ctx){
     }
 
     const ratio = P != null ? Math.min(2, Math.max(0.25, P / A)) : 1;
-    const score = Math.pow(V0, wv) * Math.pow(A, wa) * Math.pow(ratio, wr);
 
     const ven = c.vOn ? bestVenture(r.id, c) : null;
     const units = st && st.units != null ? st.units : null;
@@ -1071,8 +1429,75 @@ function computeRows(ctx){
       dailyGil  = sold * A * (1 - c.tax);
       netHour   = dailyGil / (c.runs * c.hours);         // 實收時薪
     }
+
+    // 庫存壓力：賣不掉的部分會堆在背包裡，換算成每週吃掉幾格
+    let stack = null, deadPerDay = null, deadSlots = null;
+    if (ven){
+      stack = (S.stacks && +S.stacks[String(r.id)]) || 999;
+      const dailyOut = ven.qty * c.runs;
+      deadPerDay = Math.max(0, dailyOut - Math.min(dailyOut, V0 * c.share));
+      deadSlots  = Math.ceil(deadPerDay * 7 / stack);
+    }
+    // 製作利潤：成品收入 − 材料成本
+    let rec = null, craftCostGil = null, craftProfit = null, craftMult = null, craftMissing = 0;
+    let craftROI = null, craftDaily = null, craftCapital = null, craftFixed = false, craftFallback = 0;
+    if (S.recipes){
+      const cand = S.recipes[r.id];
+      if (cand && cand.lvl <= c.cLvl && (!c.cJob || String(cand.job) === c.cJob)){
+        rec = cand;
+        const { cost, missing, fixed, fallback } = craftCost(cand, c.basis);
+        craftMissing = missing.length;
+        craftFixed = c.basis === "npc" ? fixed : isFixedCost(cand);
+        craftFallback = fallback;
+        if (!missing.length && cost > 0){
+          const revenue = A * cand.yields * (1 - c.tax);
+          craftCostGil = cost;
+          craftProfit  = revenue - cost;
+          craftMult    = revenue / cost;
+
+          /* 資本效率：三個指標彼此不可互換
+             ROI      = 每一塊本金的效率，本金少的時候就看這個
+             每日利潤 = 絕對規模，但受市場吸收量限制（做得出來不等於賣得掉）
+             所需本金 = 要維持那個每日速度，身上得壓多少錢 */
+          craftROI = craftProfit / cost;
+          const craftsPerDay = (V0 * c.share) / cand.yields;
+          craftDaily   = craftProfit * craftsPerDay;
+          craftCapital = cost * craftsPerDay;
+        }
+      }
+    }
+
+    /* ---- 划算度的價值項：要不要扣掉製作材料成本 ----
+       關掉時沿用原本的平均成交價，數字和舊版一致。
+       開啟時改用「每個成品實際賺到的淨值」：
+         可製作 → 成品均價×(1−稅) − 材料成本÷成品數
+         純採集 → 成品均價×(1−稅)（沒有材料成本）
+       兩者單位相同（每單位吉爾），所以採集品和製作品可以放在同一個榜上比。 */
+    let netUnit = null, netShort = false;
+    if (c.netScore){
+      if (rec){
+        if (craftProfit != null) netUnit = craftProfit / rec.yields;
+        else netShort = true;                       // 材料缺價，無法誠實算淨值
+      } else {
+        netUnit = A * (1 - c.tax);
+      }
+    }
+
+    const valueTerm = c.netScore ? netUnit : A;
+    const score = (valueTerm != null && valueTerm > 0)
+      ? Math.pow(V0, wv) * Math.pow(valueTerm, wa) * Math.pow(ratio, wr)
+      : 0;                                          // 淨值 ≤ 0（做了虧錢）或缺價 → 排到最後
+
     if (ven && c.minFill > 0 && fill < c.minFill) continue;
     if (c.rankMode === "venture" && !ven) continue;
+    if (c.rankMode === "craft"){
+      if (!rec) continue;
+      if (c.hideMissing && craftMissing) continue;
+      if (c.fixedOnly && !craftFixed) continue;
+      if (c.maxCap > 0 && craftCostGil != null && craftCostGil > c.maxCap) continue;
+      if (c.minROI > 0 && (craftROI == null || craftROI < c.minROI)) continue;
+    }
+    if (c.netScore && netShort && c.hideMissing) continue;
 
     const ventureScore = ven && netHour != null
       ? Math.pow(V0, +$("wsv").value) * Math.pow(Math.max(1, gil / c.hours), +$("wvh").value)
@@ -1085,7 +1510,8 @@ function computeRows(ctx){
       cleaned: !!(rp && c.robust),
       dropped: rp ? rp.dropped : null,
       medianPrice: rp ? rp.median : null,
-      ratio, flow: V0 * A, score,
+      ratio, flow: V0 * A, score, netUnit, netShort,
+      netFlow: netUnit != null ? V0 * netUnit : null,
       ver: S.itemVer ? S.itemVer[String(r.id)] : null,
       gather: S.gather ? S.gather[r.id] : null,
       ven,
@@ -1097,6 +1523,9 @@ function computeRows(ctx){
       ventureDaily: dailyGil,
       ventureNet: netHour,
       ventureScore,
+      stack, deadPerDay, deadSlots,
+      rec, craftCostGil, craftProfit, craftMult, craftMissing,
+      craftROI, craftDaily, craftCapital, craftFixed, craftFallback,
     });
   }
   return rows;
@@ -1123,31 +1552,49 @@ function srcCell(r){
   } else if (!V.on && S.venture && S.venture[r.id]){
     out.push(`<span class="tag ven">🧭 雇員可採</span>`);
   }
+  if (r.rec) out.push(`<span class="tag crf">🔨${CRAFT_JOB[r.rec.job] || "生產"} Lv${r.rec.lvl}</span>`);
   return out.join("") || `<span class="tag">—</span>`;
+}
+
+function craftCell(r){
+  if (!r.rec) return `<span class="tag">—</span>`;
+  const job = CRAFT_JOB[r.rec.job] || "製作";
+  const out = [`<span class="tag crf">🔨${job} Lv${r.rec.lvl}${r.rec.yields > 1 ? "×" + r.rec.yields : ""}</span>`];
+  if (r.craftFixed) out.push(`<span class="tag btn">固定成本</span>`);
+  else if (r.craftFallback) out.push(`<span class="tag warn">${r.craftFallback} 種材料非固定價</span>`);
+  if (r.craftMissing) out.push(`<span class="tag warn">材料缺價 ${r.craftMissing}</span>`);
+  else {
+    const mats = r.rec.ing.map(x =>
+      `${escapeHtml(S.itemNames[x.id] || ("#" + x.id))}×${x.amount}`).join("、");
+    out.push(`<span class="tag" title="${escapeHtml(mats)}">材料 ${r.rec.ing.length} 種</span>`);
+  }
+  return out.join("");
 }
 
 function render(){
   const q = $("fSearch").value.trim().toLowerCase();
   const cat = $("fCat").value;
-  const minV = +$("fVel").value || 0;
-  const minP = +$("fPrice").value || 0;
-
+  // 日均銷量／平均成交價的門檻已經在 computeRows 擋掉，這裡只做顯示用的縮小
   let rows = computeRows().filter(r =>
-    r.velocity >= minV && r.avgPrice >= minP &&
     (!cat || String(r.cat) === cat) &&
     (!q || r.name.toLowerCase().includes(q))
   );
   const k = S.sortKey;
   rows.sort((a,b) => (((b[k] ?? -Infinity) - (a[k] ?? -Infinity))) * (S.sortDesc ? 1 : -1));
   const vm = S.rankMode === "venture";
-  const sk = vm ? "ventureScore" : "score";
+  const sk = vm ? "ventureScore" : "score";   // 製作模式用表頭排序（craftProfit），分數欄仍顯示賣出划算度
   const maxScore = rows.reduce((mx, r) => Math.max(mx, r[sk] || 0), 0) || 1;
+  const cm = S.rankMode === "craft";
+  const tbl = document.querySelector("table");
+  tbl.classList.toggle("show-ven", V.on || vm);
+  tbl.classList.toggle("show-craft", cm);   // 生產欄位只在生產排行出現，採集時不製造雜訊
+  tbl.classList.toggle("show-net", $("fNetScore").checked);
   $("thScore").dataset.k = sk;
-  $("thScore").textContent = vm ? "雇員適性" : "賣出划算度";
+  $("thScore").textContent = vm ? "雇員適性" : ($("fNetScore").checked ? "划算度（淨值）" : "賣出划算度");
 
   const tb = $("tbody"); tb.innerHTML = "";
   if (!rows.length){
-    tb.innerHTML = `<tr><td colspan="15" class="empty">${S.results.length ? "沒有符合條件的物品，放寬版本、取得方式或銷量門檻試試。" : "選好資料中心後按「開始掃描」，掃完的排行會出現在這裡。"}</td></tr>`;
+    tb.innerHTML = `<tr><td colspan="24" class="empty">${S.results.length ? "沒有符合條件的物品，放寬版本、取得方式或銷量門檻試試。" : "選好資料中心後按「開始掃描」，掃完的排行會出現在這裡。"}</td></tr>`;
     $("footInfo").textContent = S.scanMeta; $("moreBtn").style.display = "none";
     return;
   }
@@ -1173,13 +1620,30 @@ function render(){
       `<td>${fmt(r.unitsForSale)}</td>` +
       `<td class="${dcls}">${r.daysToClear == null ? "—" : fmt1(r.daysToClear)}</td>` +
       `<td>${fmt(r.flow)}</td>` +
-      `<td class="${r.ventureHour ? "vph" : ""}">${fmt(r.ventureHour)}</td>` +
-      `<td class="${r.ventureNet ? "vph-net" : ""}"${r.ventureNet != null ? ` title="每天實收 ${fmt(r.ventureDaily)} 吉爾｜市場吸收率 ${Math.round(r.ventureFill * 100)}%"` : ""}>` +
+      `<td class="cg-net ${r.netShort ? "ratio-lo" : r.netUnit != null && r.netUnit > 0 ? "ratio-hi" : r.netUnit != null ? "ratio-lo" : ""}"`+
+        `${r.netUnit != null ? ` title="每賣掉 1 個實際進帳 ${fmt(r.netUnit)} 吉爾｜每日淨金流 ${fmt(r.netFlow)}"` : ""}>` +
+        `${r.netShort ? `<span class="tag warn">材料缺價</span>` : fmt(r.netUnit)}</td>` +
+      `<td class="cg-ven ${r.ventureHour ? "vph" : ""}">${fmt(r.ventureHour)}</td>` +
+      `<td class="cg-ven ${r.ventureNet ? "vph-net" : ""}"${r.ventureNet != null ? ` title="每天實收 ${fmt(r.ventureDaily)} 吉爾｜市場吸收率 ${Math.round(r.ventureFill * 100)}%"` : ""}>` +
         `${fmt(r.ventureNet)}${r.ventureFill != null && r.ventureFill < 0.999 ? ` <span class="tag warn">${Math.round(r.ventureFill * 100)}%</span>` : ""}</td>` +
+      `<td class="cg-ven ${r.deadSlots == null ? "" : r.deadSlots === 0 ? "clear-fast" : r.deadSlots > 5 ? "clear-slow" : ""}"` +
+        `${r.deadSlots != null ? ` title="堆疊上限 ${fmt(r.stack)}｜每天賣不掉約 ${fmt(r.deadPerDay)} 個"` : ""}>` +
+        `${r.deadSlots == null ? "—" : r.deadSlots === 0 ? "0 格" : r.deadSlots + " 格/週"}</td>` +
+      `<td class="cg-craft src">${craftCell(r)}</td>` +
+      `<td class="cg-craft">${fmt(r.craftCostGil)}</td>` +
+      `<td class="cg-craft ${r.craftProfit == null ? "" : r.craftProfit > 0 ? "ratio-hi" : "ratio-lo"}">${fmt(r.craftProfit)}</td>` +
+      `<td class="cg-craft ${r.craftMult == null ? "" : r.craftMult >= 1 ? "ratio-hi" : "ratio-lo"}">${r.craftMult == null ? "—" : r.craftMult.toFixed(2)}</td>` +
+      `<td class="cg-craft ${r.craftROI == null ? "" : r.craftROI > 0 ? "ratio-hi" : "ratio-lo"}">`+
+        `${r.craftROI == null ? "—" : (r.craftROI * 100).toFixed(0) + "%"}</td>` +
+      `<td class="cg-craft ${r.craftDaily ? "vph" : ""}">${fmt(r.craftDaily)}</td>` +
+      `<td class="cg-craft">${fmt(r.craftCapital)}</td>` +
       `<td class="score"><div class="scorebar" style="width:${Math.max(3, sc)}%"></div><span>${sc.toFixed(1)}</span></td>`;
     frag.appendChild(tr);
   });
   tb.appendChild(frag);
+  $("craftCount").textContent = cm
+    ? `　${rows.length.toLocaleString()} 項可製作`
+    : (S.recipes ? "　已載入配方" : "");
   $("footInfo").textContent = `${S.scanMeta}｜符合條件 ${rows.length.toLocaleString()} 項，顯示前 ${Math.min(S.shown, rows.length)} 名`;
   $("moreBtn").style.display = rows.length > S.shown ? "" : "none";
 
@@ -1196,7 +1660,7 @@ document.querySelector("thead").addEventListener("click", e => {
   if (S.sortKey === k) S.sortDesc = !S.sortDesc; else { S.sortKey = k; S.sortDesc = true; }
   render();
 });
-["fSearch","fCat","fVel","fPrice","fVerMax","fVerUnknown","fGatherLvl","fNoLimited","fNoFolklore","fNoCrystal","fRobust",
+["fSearch","fCat","fVel","fPrice","fVerMax","fVerUnknown","fGatherLvl","fNoLimited","fNoFolklore","fNoCrystal","fRobust","fDropLow","cLvl","cJob","cHideMissing","fNetScore","cMaxCap","cMinROI",
  "vLvl","vGather","vPerc","vIlvl","vMin","vTax","vOnly","vRuns","vShare","vFill"].forEach(id =>
   $(id).addEventListener("input", () => { if (S.results.length){ S.shown = 100; render(); } })
 );
@@ -1207,9 +1671,9 @@ $("csvBtn").onclick = () => {
   const rows = computeRows().sort((a,b) => (b[S.rankMode === "venture" ? "ventureScore" : "score"] || 0) - (a[S.rankMode === "venture" ? "ventureScore" : "score"] || 0));
   if (!rows.length) return;
   const vm = S.rankMode === "venture";
-  const sk = vm ? "ventureScore" : "score";
+  const sk = vm ? "ventureScore" : "score";   // 製作模式用表頭排序（craftProfit），分數欄仍顯示賣出划算度
   const maxScore = rows[0][sk] || 1;
-  let csv = "\uFEFF名次,物品ID,物品,分類,版本,採集職業,採集等級,雇員委托,單趟數量,日均銷量,平均成交價,原始均價,剔除筆數,目前最低價,行情係數,在售量,消化天數,日均金流,理論時薪,實收時薪,吸收率%,每日實收,排行分數\n";
+  let csv = "\uFEFF名次,物品ID,物品,分類,版本,採集職業,採集等級,雇員委托,單趟數量,日均銷量,平均成交價,原始均價,剔除筆數,目前最低價,行情係數,在售量,消化天數,日均金流,淨單價,每日淨金流,理論時薪,實收時薪,吸收率%,每日實收,堆疊上限,每日滯銷量,庫存壓力格數,製作職業,製作等級,成品數,材料成本,製作利潤,加工倍率,ROI%,每日利潤,所需本金,固定成本,排行分數\n";
   rows.forEach((r,i) => {
     const g = r.gather;
     const jobs = g ? ["MIN","BTN","FSH"].filter(j => g[j]).map(j => JOB_NAME[j]).join("/") : "";
@@ -1221,10 +1685,23 @@ $("csvBtn").onclick = () => {
       r.minListing ?? "",
       r.ratio.toFixed(2), r.unitsForSale ?? "", r.daysToClear != null ? r.daysToClear.toFixed(1) : "",
       Math.round(r.flow),
+      r.netUnit != null ? Math.round(r.netUnit) : (r.netShort ? "材料缺價" : ""),
+      r.netFlow != null ? Math.round(r.netFlow) : "",
       r.ventureHour != null ? Math.round(r.ventureHour) : "",
       r.ventureNet != null ? Math.round(r.ventureNet) : "",
       r.ventureFill != null ? Math.round(r.ventureFill * 100) : "",
       r.ventureDaily != null ? Math.round(r.ventureDaily) : "",
+      r.stack ?? "", r.deadPerDay != null ? Math.round(r.deadPerDay) : "",
+      r.deadSlots ?? "",
+      r.rec ? `"${CRAFT_JOB[r.rec.job] || ""}"` : "",
+      r.rec ? r.rec.lvl : "", r.rec ? r.rec.yields : "",
+      r.craftCostGil != null ? Math.round(r.craftCostGil) : "",
+      r.craftProfit != null ? Math.round(r.craftProfit) : "",
+      r.craftMult != null ? r.craftMult.toFixed(2) : "",
+      r.craftROI != null ? (r.craftROI * 100).toFixed(0) : "",
+      r.craftDaily != null ? Math.round(r.craftDaily) : "",
+      r.craftCapital != null ? Math.round(r.craftCapital) : "",
+      r.rec ? (r.craftFixed ? "是" : "否") : "",
       ((r[sk] || 0)/maxScore*100).toFixed(1)].join(",") + "\n";
   });
   const a = document.createElement("a");
@@ -1233,6 +1710,45 @@ $("csvBtn").onclick = () => {
   a.click();
 };
 
+/* ================= 面板收合 =================
+   狀態記在 localStorage，但那是單一瀏覽器的方便功能，
+   讀寫都包 try/catch，私密視窗或封鎖站台資料時照樣能用。 */
+const PKEY = "ffxiv_tw_rank_panels";
+function panelKey(sec){
+  const h2 = sec.querySelector(":scope > h2");
+  return h2 ? h2.textContent.replace(/[▾\s]/g, "").slice(0, 24) : "";
+}
+function savePanels(){
+  try{
+    const st = {};
+    document.querySelectorAll("section.panel").forEach(sec => {
+      const k = panelKey(sec); if (k) st[k] = sec.classList.contains("collapsed");
+    });
+    localStorage.setItem(PKEY, JSON.stringify(st));
+  }catch(e){ /* 存不了就算了，不影響功能 */ }
+}
+function restorePanels(){
+  let st = null;
+  try{ st = JSON.parse(localStorage.getItem(PKEY) || "null"); }catch(e){ st = null; }
+  if (!st) return;
+  document.querySelectorAll("section.panel").forEach(sec => {
+    const k = panelKey(sec);
+    if (k && typeof st[k] === "boolean") sec.classList.toggle("collapsed", st[k]);
+  });
+}
+document.querySelectorAll("section.panel").forEach(sec => {
+  const h2 = sec.querySelector(":scope > h2"); if (!h2) return;
+  h2.setAttribute("tabindex", "0");
+  h2.setAttribute("role", "button");
+  const toggle = () => { sec.classList.toggle("collapsed"); savePanels(); };
+  h2.addEventListener("click", toggle);
+  h2.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === " "){ e.preventDefault(); toggle(); }
+  });
+});
+restorePanels();
+
+syncNetUI();
 init();
 </script>
 </body>
