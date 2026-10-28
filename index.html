@@ -104,6 +104,16 @@
   input[type=range]{width:100%; accent-color:var(--gold);}
 
   /* retainer panel */
+  details.adv{margin-top:12px; border-top:1px solid var(--line-soft); padding-top:10px;}
+  details.adv > summary{
+    cursor:pointer; color:var(--faint); font-size:12px; list-style:none;
+    display:flex; align-items:center; gap:6px; width:fit-content;
+  }
+  details.adv > summary::-webkit-details-marker{display:none;}
+  details.adv > summary::before{content:"▸"; color:var(--gold-dim); transition:transform .15s;}
+  details.adv[open] > summary::before{transform:rotate(90deg);}
+  details.adv > summary:hover{color:var(--muted);}
+  details.adv .row:first-of-type{margin-top:10px;}
   .panel.retainer{border-color:rgba(95,211,165,.28);}
   .panel.retainer h2{color:var(--jade);}
   .retainer .chip.on{
@@ -242,8 +252,8 @@
         <option value="3">3.x 蒼穹</option>
         <option value="4">4.x 紅蓮</option>
         <option value="5">5.x 暗影</option>
-        <option value="6" selected>6.x 曉月</option>
-        <option value="7">7.x 黃金</option>
+        <option value="6">6.x 曉月</option>
+        <option value="7" selected>7.x 黃金</option>
       </select>
       <label class="check"><input type="checkbox" id="fVerUnknown" checked> 保留查不到版本的物品</label>
     </div>
@@ -261,7 +271,7 @@
     </div>
 
     <div class="row">
-      <span class="fieldlabel">採集等級 ≤</span><input type="number" id="fGatherLvl" value="90" min="1" max="100" step="5">
+      <span class="fieldlabel">職業等級 ≤</span><input type="number" id="fGatherLvl" value="100" min="1" max="100" step="5">
       <label class="check"><input type="checkbox" id="fNoLimited"> 排除時間限定節點</label>
       <label class="check"><input type="checkbox" id="fNoFolklore"> 排除需要傳承錄的節點</label>
     </div>
@@ -286,13 +296,6 @@
     </div>
     <div id="retainerBody" hidden>
       <div class="row">
-        <span class="fieldlabel">雇員等級</span>
-        <select id="vLvl"></select>
-        <span class="fieldlabel">採集力</span><input type="number" id="vGather" value="2800" min="0" step="50">
-        <span class="fieldlabel">鑑別力</span><input type="number" id="vPerc" value="2800" min="0" step="50">
-        <span class="fieldlabel">裝備品級</span><input type="number" id="vIlvl" value="560" min="0" step="10">
-      </div>
-      <div class="row">
         <span class="fieldlabel">委托類型</span>
         <div class="chipgroup" id="vCatChips">
           <button class="chip on" data-c="all">全部合併</button>
@@ -303,20 +306,28 @@
         </div>
       </div>
       <div class="row">
-        <span class="fieldlabel" id="vCatHint">選單一類型時，表格只留下該類委托並自動改用「雇員時薪」排序。</span>
+        <span class="fieldlabel" id="vCatHint">選單一類型時，表格只留下該類委托並自動改用「實收時薪」排序。</span>
       </div>
-      <div class="row">
-        <span class="fieldlabel">單趟時間（分）</span><input type="number" id="vMin" value="60" min="1" step="5">
-        <span class="fieldlabel">市場稅 %</span><input type="number" id="vTax" value="5" min="0" max="20" step="1">
-        <label class="check"><input type="checkbox" id="vOnly"> 只留下這個雇員派得動的委托</label>
-      </div>
-      <div class="row">
-        <span class="fieldlabel">每天總派遣趟數</span><input type="number" id="vRuns" value="12" min="1" step="1">
-        <span class="fieldlabel">你吃得下的市佔 %</span><input type="number" id="vShare" value="50" min="1" max="100" step="5">
-        <span class="fieldlabel">吸收率 ≥ %</span><input type="number" id="vFill" value="0" min="0" max="100" step="10">
-      </div>
+
+      <details class="adv">
+        <summary>進階設定（通常不用動）</summary>
+        <div class="row">
+          <label class="check"><input type="checkbox" id="vMid"> 我的雇員還沒養滿（用中階數量估算）</label>
+        </div>
+        <div class="row">
+          <span class="fieldlabel">單趟時間（分）</span><input type="number" id="vMin" value="60" min="1" step="5">
+          <span class="fieldlabel">市場稅 %</span><input type="number" id="vTax" value="5" min="0" max="20" step="1">
+          <span class="fieldlabel">每天總派遣趟數</span><input type="number" id="vRuns" value="12" min="1" step="1">
+        </div>
+        <div class="row">
+          <span class="fieldlabel">你吃得下的市佔 %</span><input type="number" id="vShare" value="50" min="1" max="100" step="5">
+          <span class="fieldlabel">吸收率 ≥ %</span><input type="number" id="vFill" value="0" min="0" max="100" step="10">
+        </div>
+      </details>
+
       <p class="note" style="margin-top:12px">
-        採集力、鑑別力、裝備品級請照雇員視窗上的數字填。採集力決定「這個委托能不能派」，鑑別力決定「一趟帶回幾個」。
+        預設假設<b>滿等滿裝的雇員</b>（等級 100、採集力與鑑別力足以吃到最高數量階），所以不用輸入雇員視窗上的數字。
+        雇員還在養的話，勾上面進階裡的那一項，改用中階數量估算。
       </p>
     </div></div>
   </section>
@@ -384,38 +395,36 @@
       </div>
 
       <div class="row">
-        <span class="fieldlabel">製作等級 ≤</span><input type="number" id="cLvl" value="90" min="1" max="100" step="5">
-        <span class="fieldlabel">只看職業</span>
-        <select id="cJob">
-          <option value="">全部製作職業</option>
-          <option value="8">木工師</option><option value="9">鍛鐵師</option>
-          <option value="10">鑄甲師</option><option value="11">雕金師</option>
-          <option value="12">製革師</option><option value="13">裁衣師</option>
-          <option value="14">煉金術士</option><option value="15">烹調師</option>
-        </select>
-      </div>
-
-      <div class="row">
         <label class="check"><input type="checkbox" id="cFixedOnly"> 只看固定成本配方（材料全部能用 NPC 固定價買到）</label>
-        <label class="check"><input type="checkbox" id="cHideMissing" checked> 隱藏材料缺報價的配方</label>
-      </div>
-
-      <div class="row">
-        <span class="fieldlabel">本金上限</span><input type="number" id="cMaxCap" value="0" min="0" step="10000">
-        <span class="fieldlabel">ROI ≥ %</span><input type="number" id="cMinROI" value="0" min="0" step="10">
         <button class="btn-ghost calm" id="craftBtn">抓材料報價，算製作利潤</button>
       </div>
 
-      <div class="row">
-        <label class="check"><input type="checkbox" id="fNetScore"> 另外：把材料成本也算進「賣出划算度」（會把製作品混進採集榜，預設關閉）</label>
-        <button class="btn-ghost calm" id="netMatBtn" style="display:none">抓材料報價</button>
-      </div>
+      <details class="adv">
+        <summary>進階設定（通常不用動）</summary>
+        <div class="row">
+          <span class="fieldlabel">只看職業</span>
+          <select id="cJob">
+            <option value="">全部製作職業</option>
+            <option value="8">木工師</option><option value="9">鍛鐵師</option>
+            <option value="10">鑄甲師</option><option value="11">雕金師</option>
+            <option value="12">製革師</option><option value="13">裁衣師</option>
+            <option value="14">煉金術士</option><option value="15">烹調師</option>
+          </select>
+          <span class="fieldlabel">本金上限</span><input type="number" id="cMaxCap" value="0" min="0" step="10000">
+          <span class="fieldlabel">ROI ≥ %</span><input type="number" id="cMinROI" value="0" min="0" step="10">
+        </div>
+        <div class="row">
+          <label class="check"><input type="checkbox" id="cHideMissing" checked> 隱藏材料缺報價的配方</label>
+          <label class="check"><input type="checkbox" id="fNetScore"> 把材料成本也算進「賣出划算度」（會把製作品混進採集榜）</label>
+          <button class="btn-ghost calm" id="netMatBtn" style="display:none">抓材料報價</button>
+        </div>
+      </details>
 
       <p class="note" style="margin-top:10px">
+        製作等級跟著上方「職業等級 ≤」走，不用另外填。
         <b>自採材料</b>問的是：雇員挖回來的素材，直接賣掉好還是加工再賣好？成本用素材自己的成交均價，也就是你放棄的賣價。
         <b>買材料</b>問的是：從市場買齊材料來做有沒有賺頭。
         <b>NPC 固定價</b>是三者裡成本最確定的——價格寫死在商店裡，不受市場波動影響；買不到的材料才回頭用市場均價，並標示出來。
-        本金上限填 0 表示不限。
       </p>
     </div>
   </section>
@@ -503,9 +512,11 @@
     <b>行情係數</b> = 目前最低掛牌價 ÷ 平均成交價（限制在 0.25–2.0）：<span class="ratio-hi">綠色 &gt; 1.05</span> 代表現在掛牌價高於近期成交均價、賣出更有利；<span class="ratio-lo">紅色 &lt; 0.95</span> 代表正在被砍價、現在賣會低於行情。<br>
     <b>消化天數</b> = 目前在售量 ÷ 日均銷量，代表市場上現有的貨要幾天才賣得完。<span class="clear-fast">低於 2 天</span>是缺貨、掛上去很快被吃掉；<span class="clear-slow">高於 14 天</span>是塞車，日均銷量再漂亮也得排隊。這欄要按「抓成交明細」才有資料。<br>
     <b>價格精算</b>：Universalis 的平均成交價是所有成交的直接平均，一筆離譜的高價或洗價就會把它拉歪。按「抓成交明細，重算均價與在售量」會拉回最近 30 天內、最多 50 筆實際成交，先取中位數，再用 MAD（絕對離差中位數）把偏離超過 3 倍標準差等效距離的成交剔除，然後對剩下的取平均。<span style="color:var(--sky)">藍色的均價</span>代表已經清洗過，滑鼠移上去可看原始均價與中位數；「剔除」欄是被判定為異常而丟掉的筆數。成交少於 4 筆的物品樣本不足，不做清洗，沿用原始均價。若有批次沒抓到，狀態列會告訴你缺幾批，再按一次即可補齊。<br>
+    <b>雇員收益不需要輸入雇員數值</b>：預設假設滿等滿裝的雇員，直接取每個委托數量階梯的最高階；雇員還在養的話到進階勾「還沒養滿」，改取中間一階估算。筹集委托的等級上限是 100，滿等雇員派得動全部委托，所以也不再需要「只留派得動的」這種篩選。<br>
+    <b>職業等級 ≤</b> 同時當作採集等級與製作等級的上限，不用分開填；預設 100，搭配版本預設 7.x。<br>
     <b>理論時薪</b> = 單趟帶回數量 × 平均成交價 × (1 − 市場稅) ÷ 單趟時數。這是「挖多少賣多少」的上限值，沒有考慮市場吃不吃得下。<br>
     <b>實收時薪</b>是真正該看的那一欄，把產量壓在市場吞吐量之內：每天產量 = 單趟數量 × 每天總派遣趟數；每天賣得掉 = 日均銷量 × 你吃得下的市佔；兩者取小值才是實際換得到吉爾的量，再除以你投入的總時數。<b>吸收率</b>就是「賣得掉 ÷ 挖得出來」，低於 100% 時會在數字旁邊標紅色百分比，代表這東西單價再漂亮也會積在雇員背包裡。想直接濾掉可以把「吸收率 ≥ %」拉高。<br>
-    <b>雇員適性</b>（排行依據選「最適合雇員去挖」時出現）= 日均銷量<sup>w₁</sup> × 雇員時薪<sup>w₂</sup>，榜首標準化為 100 分。這裡刻意用「理論時薪」而不是「實收時薪」，因為實收時薪本身已經把日均銷量算進去了，再乘一次等於重複計算；用理論時薪相乘，銷量與單位價值才是兩個獨立的維度。切到這個排行時會自動開啟雇員模式，並只保留雇員派得動的物品。<br>    <b>取得方式「🔨 生產」</b>把八個製作職業合併成一個條件，只問「這東西做不做得出來」，不分木工／鍛鐵／雕金。想單看某個職業，到製作利潤面板的「只看職業」挑。選這個條件時會自動下載製作配方資料（約 5.6 MB，一個 session 一次），並受上方「製作等級 ≤」限制。幾個條件同時勾選是聯集：採礦師＋生產 = 挖得到的 <b>或</b> 做得出來的。<br>    <b>排除屬性水晶</b>：火／冰／風／土／雷／水的碎晶、水晶、晶簇共 18 種，用遊戲內的 UI 分類「水晶」（物品 ID 2–19）精準比對，不是靠名稱關鍵字，所以不會誤殺「髮晶原石」「星點石英原石」這類名字裡有晶的礦物。預設為排除，因為水晶日均銷量動輒上千、幾乎必定佔據雇員排行前幾名，但單價極低、搬運量大。想把它們放回來，取消勾選即可。<br>    <b>庫存壓力</b> = 每天挖出來但賣不掉的量 × 7 ÷ 堆疊上限，也就是你每週會累積幾格賣不出去的死庫存。0 格代表產量完全被市場吸收；超過 5 格就要考慮減少派遣或換物品。筹集委托的素材堆疊上限都是 999（水晶是 9999），單趟最多 120 個，所以一趟貨永遠只佔 1 格——真正會吃背包的是這種賣不掉的累積量。<br>    <b>掃描時丟棄冷門物品</b>：日均銷量是 API 回傳的欄位，要先打完請求才知道，所以這個門檻<b>不會</b>減少掃描的請求數或時間。它省的是後面：結果集變小，調權重、換排序、切品質都更順，而且「價格精算」和「抓材料報價」這兩個第二輪請求不會再浪費在你根本看不到的冷門列上（這是真正省請求的地方）。判斷用「綜合」品質的銷量，它等於 NQ＋HQ、必定大於任一單獨品質，所以丟掉的列在任何品質模式下都不可能入榜，切換品質不會缺資料。<br>    <b>並行請求</b>預設 6。Universalis 沒有公布硬性速率上限，單次請求的 100 個 ID 已經是上限，所以要再快只能提高並行數。看到批次失敗變多就往下調。<br>    <b>生產分析面板</b>裡的設定只在「🔨 製作利潤」排行生效，不會動到採集或雇員的排名；生產專屬欄位也只在該排行出現。面板標題可以點擊收合，收合狀態記在瀏覽器裡，下次打開照你上次的樣子。<br>    <b>三個資本效率指標彼此不能互換</b>：<b>ROI</b> = 利潤÷本金，本金有限時就看這個；<b>每日利潤</b>是絕對規模，但已經受市場吸收量限制（做得出來不等於賣得掉）；<b>所需本金</b>是要維持那個每日速度、身上得壓多少錢，這一欄排序是越低越好。本金少追 ROI，本金多追每日利潤——同一批配方用這三個排，前五名通常完全不同。<br>    <b>固定成本配方</b>指材料全部能用 NPC 商店固定價買到的配方（共 1,622 個，水晶算在內）。這類配方的材料成本<b>寫死在商店裡、不受市場波動影響</b>，也不需要採集或雇員，可以無限重複。成本基準選「NPC 固定價」時，買不到的材料才回頭用市場均價，並在取得方式欄標示有幾種材料不是固定價。<br>    <b>划算度扣掉製作材料成本</b>：勾選後，划算度公式裡的價值項從「平均成交價」換成「每單位淨值」——可製作的物品是 成品均價×(1−稅) − 材料成本÷成品數，純採集的物品沒有材料成本，就是 成品均價×(1−稅)。材料成本一律用材料自己的<b>成交均價</b>計算。兩種物品的單位相同（每賣掉一個實際進帳多少吉爾），所以採集品和製作品可以放在同一個榜上直接比。淨值是負的（做出來反而虧錢）會得到 0 分排到最後，不會因為成品單價高就誤佔前排。需要先按「抓材料報價」；缺報價的配方標成「材料缺價」，預設排除而不是當成 0 元成本。<br>    <b>製作利潤</b> = 成品均價 × 成品數 × (1 − 市場稅) − Σ(材料單價 × 需求量)；<b>加工倍率</b>是收入 ÷ 成本，大於 1 才有加工價值。材料一律以 NQ 計價。只要有任何一種材料抓不到報價，整筆會標成「材料缺價」並預設排除，不會把缺價材料當成 0 元而算出假利潤。注意這裡沒有把製作失敗、HQ 溢價和初品質納入計算。<br>    <b>日均金流</b> = 日均銷量 × 平均成交價，代表這個物品市場每天流動的吉爾規模。<br>
+    <b>雇員適性</b>（排行依據選「最適合雇員去挖」時出現）= 日均銷量<sup>w₁</sup> × 雇員時薪<sup>w₂</sup>，榜首標準化為 100 分。這裡刻意用「理論時薪」而不是「實收時薪」，因為實收時薪本身已經把日均銷量算進去了，再乘一次等於重複計算；用理論時薪相乘，銷量與單位價值才是兩個獨立的維度。切到這個排行時會自動開啟雇員模式。<br>    <b>取得方式「🔨 生產」</b>把八個製作職業合併成一個條件，只問「這東西做不做得出來」，不分木工／鍛鐵／雕金。想單看某個職業，到生產分析面板的進階設定挑。選這個條件時會自動下載製作配方資料（約 5.6 MB，一個 session 一次），並受「職業等級 ≤」限制。幾個條件同時勾選是聯集：採礦師＋生產 = 挖得到的 <b>或</b> 做得出來的。<br>    <b>排除屬性水晶</b>：火／冰／風／土／雷／水的碎晶、水晶、晶簇共 18 種，用遊戲內的 UI 分類「水晶」（物品 ID 2–19）精準比對，不是靠名稱關鍵字，所以不會誤殺「髮晶原石」「星點石英原石」這類名字裡有晶的礦物。預設為排除，因為水晶日均銷量動輒上千、幾乎必定佔據雇員排行前幾名，但單價極低、搬運量大。想把它們放回來，取消勾選即可。<br>    <b>庫存壓力</b> = 每天挖出來但賣不掉的量 × 7 ÷ 堆疊上限，也就是你每週會累積幾格賣不出去的死庫存。0 格代表產量完全被市場吸收；超過 5 格就要考慮減少派遣或換物品。筹集委托的素材堆疊上限都是 999（水晶是 9999），單趟最多 120 個，所以一趟貨永遠只佔 1 格——真正會吃背包的是這種賣不掉的累積量。<br>    <b>掃描時丟棄冷門物品</b>：日均銷量是 API 回傳的欄位，要先打完請求才知道，所以這個門檻<b>不會</b>減少掃描的請求數或時間。它省的是後面：結果集變小，調權重、換排序、切品質都更順，而且「價格精算」和「抓材料報價」這兩個第二輪請求不會再浪費在你根本看不到的冷門列上（這是真正省請求的地方）。判斷用「綜合」品質的銷量，它等於 NQ＋HQ、必定大於任一單獨品質，所以丟掉的列在任何品質模式下都不可能入榜，切換品質不會缺資料。<br>    <b>並行請求</b>預設 6。Universalis 沒有公布硬性速率上限，單次請求的 100 個 ID 已經是上限，所以要再快只能提高並行數。看到批次失敗變多就往下調。<br>    <b>生產分析面板</b>裡的設定只在「🔨 製作利潤」排行生效，不會動到採集或雇員的排名；生產專屬欄位也只在該排行出現。面板標題可以點擊收合，收合狀態記在瀏覽器裡，下次打開照你上次的樣子。<br>    <b>三個資本效率指標彼此不能互換</b>：<b>ROI</b> = 利潤÷本金，本金有限時就看這個；<b>每日利潤</b>是絕對規模，但已經受市場吸收量限制（做得出來不等於賣得掉）；<b>所需本金</b>是要維持那個每日速度、身上得壓多少錢，這一欄排序是越低越好。本金少追 ROI，本金多追每日利潤——同一批配方用這三個排，前五名通常完全不同。<br>    <b>固定成本配方</b>指材料全部能用 NPC 商店固定價買到的配方（共 1,622 個，水晶算在內）。這類配方的材料成本<b>寫死在商店裡、不受市場波動影響</b>，也不需要採集或雇員，可以無限重複。成本基準選「NPC 固定價」時，買不到的材料才回頭用市場均價，並在取得方式欄標示有幾種材料不是固定價。<br>    <b>划算度扣掉製作材料成本</b>：勾選後，划算度公式裡的價值項從「平均成交價」換成「每單位淨值」——可製作的物品是 成品均價×(1−稅) − 材料成本÷成品數，純採集的物品沒有材料成本，就是 成品均價×(1−稅)。材料成本一律用材料自己的<b>成交均價</b>計算。兩種物品的單位相同（每賣掉一個實際進帳多少吉爾），所以採集品和製作品可以放在同一個榜上直接比。淨值是負的（做出來反而虧錢）會得到 0 分排到最後，不會因為成品單價高就誤佔前排。需要先按「抓材料報價」；缺報價的配方標成「材料缺價」，預設排除而不是當成 0 元成本。<br>    <b>製作利潤</b> = 成品均價 × 成品數 × (1 − 市場稅) − Σ(材料單價 × 需求量)；<b>加工倍率</b>是收入 ÷ 成本，大於 1 才有加工價值。材料一律以 NQ 計價。只要有任何一種材料抓不到報價，整筆會標成「材料缺價」並預設排除，不會把缺價材料當成 0 元而算出假利潤。注意這裡沒有把製作失敗、HQ 溢價和初品質納入計算。<br>    <b>日均金流</b> = 日均銷量 × 平均成交價，代表這個物品市場每天流動的吉爾規模。<br>
     數據為 Universalis 玩家上傳的眾包資料，冷門物品可能較舊；點物品名稱可跳到貝爾市場小屋查看完整價格與取得方式。
   </p>
 </div>
@@ -614,12 +625,6 @@ function setProgress(done, total, text){
 
 /* ================= 初始化：繁中服資料中心 ================= */
 async function init(){
-  const sel = $("vLvl");
-  for (let l = 10; l <= 100; l += 10){
-    const o = document.createElement("option");
-    o.value = l; o.textContent = "Lv " + l; if (l === 90) o.selected = true;
-    sel.appendChild(o);
-  }
   try{
     setStatus("載入繁中服伺服器清單…");
     const [dcRes, wRes] = await Promise.all([
@@ -957,11 +962,7 @@ function readCtx(){
     robust: $("fRobust").checked,
     vOn: V.on,
     vCat: V.cat,
-    vLvl: +$("vLvl").value,
-    vGather: +$("vGather").value || 0,
-    vPerc: +$("vPerc").value || 0,
-    vIlvl: +$("vIlvl").value || 0,
-    vOnly: $("vOnly").checked,
+    vMid: $("vMid").checked,
     tax: Math.min(0.5, Math.max(0, (+$("vTax").value || 0) / 100)),
     hours: Math.max(1/60, (+$("vMin").value || 60) / 60),
     runs: Math.max(1, +$("vRuns").value || 12),
@@ -969,7 +970,7 @@ function readCtx(){
     minFill: Math.min(1, Math.max(0, (+$("vFill").value || 0) / 100)),
     rankMode: S.rankMode,
     basis: C.basis,
-    cLvl: +$("cLvl").value || 100,
+    cLvl: +$("fGatherLvl").value || 100,   // 製作與採集共用同一個「職業等級 ≤」
     cJob: $("cJob").value,
     hideMissing: $("cHideMissing").checked,
     netScore: $("fNetScore").checked,
@@ -1001,21 +1002,22 @@ function robustPrice(prices){
   return { avg, median: med, kept: use.length, dropped: s.length - use.length };
 }
 
-/* 依目前雇員設定，算出這個物品最好的一趟能帶回幾個 */
+/* 這個物品最好的一趟能帶回幾個。
+   預設假設滿等滿裝的雇員（等級 100、採集力與鑑別力都吃到最高數量階），
+   所以不必要求使用者輸入雇員視窗上的四個數字；
+   勾了「還沒養滿」就改取數量階梯的中間一階當估算。 */
 function bestVenture(id, c){
   const arr = S.venture && S.venture[id];
   if (!arr) return null;
   let best = null;
   for (const t of arr){
     if (c.vCat !== "all" && String(t.cat) !== c.vCat) continue;
-    const usesPerc = t.stat === "perception";
-    const ok = t.lvl <= c.vLvl && (usesPerc ? t.reqG <= c.vGather : t.reqI <= c.vIlvl);
-    if (c.vOnly && !ok) continue;
-    const stat = usesPerc ? c.vPerc : c.vIlvl;
-    let qty = 0;
-    for (const s of t.q) if (stat >= s.v) qty = Math.max(qty, s.n);
-    if (!qty) qty = t.q[0].n;                       // 保底：最低階數量
-    if (!best || qty > best.qty) best = { qty, cat:t.cat, lvl:t.lvl, reqG:t.reqG, reqI:t.reqI, ok, usesPerc };
+    const tiers = t.q.map(s => s.n);
+    const qty = c.vMid
+      ? tiers[Math.floor((tiers.length - 1) / 2)]       // 中階
+      : Math.max(...tiers);                             // 滿階
+    if (!qty) continue;
+    if (!best || qty > best.qty) best = { qty, cat:t.cat, lvl:t.lvl, tiers: tiers.length, ok:true };
   }
   return best;
 }
@@ -1171,7 +1173,7 @@ function passesMeta(id, c){
   }
 
   // 雇員模式：勾了「只留派得動的」或選了單一委托類型，就必須真的有委托
-  if (c.vOn && (c.vOnly || c.vCat !== "all") && !bestVenture(id, c)) return false;
+  if (c.vOn && c.vCat !== "all" && !bestVenture(id, c)) return false;
 
   return true;
 }
@@ -1548,7 +1550,7 @@ function srcCell(r){
   }
   if (r.ven){
     const c = VEN_CAT[r.ven.cat] || { n:"雇員", s:"🧭" };
-    out.push(`<span class="tag ven">${c.s}${c.n} Lv${r.ven.lvl}×${r.ven.qty}${r.ven.ok ? "" : "・不足"}</span>`);
+    out.push(`<span class="tag ven" title="滿裝雇員一趟 ${r.ven.qty} 個">${c.s}${c.n} Lv${r.ven.lvl}×${r.ven.qty}</span>`);
   } else if (!V.on && S.venture && S.venture[r.id]){
     out.push(`<span class="tag ven">🧭 雇員可採</span>`);
   }
@@ -1660,8 +1662,8 @@ document.querySelector("thead").addEventListener("click", e => {
   if (S.sortKey === k) S.sortDesc = !S.sortDesc; else { S.sortKey = k; S.sortDesc = true; }
   render();
 });
-["fSearch","fCat","fVel","fPrice","fVerMax","fVerUnknown","fGatherLvl","fNoLimited","fNoFolklore","fNoCrystal","fRobust","fDropLow","cLvl","cJob","cHideMissing","fNetScore","cMaxCap","cMinROI",
- "vLvl","vGather","vPerc","vIlvl","vMin","vTax","vOnly","vRuns","vShare","vFill"].forEach(id =>
+["fSearch","fCat","fVel","fPrice","fVerMax","fVerUnknown","fGatherLvl","fNoLimited","fNoFolklore","fNoCrystal","fRobust","fDropLow","cJob","cHideMissing","fNetScore","cMaxCap","cMinROI",
+ "vMid","vMin","vTax","vRuns","vShare","vFill"].forEach(id =>
   $(id).addEventListener("input", () => { if (S.results.length){ S.shown = 100; render(); } })
 );
 $("moreBtn").onclick = () => { S.shown += 100; render(); };
